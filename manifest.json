@@ -1,0 +1,86 @@
+{
+  "name": "구몬수학 교재 뷰어",
+  "short_name": "수학뷰어",
+  "description": "구몬수학 A·B·C 단계별 교재 뷰어 with S펜 필기",
+  "start_url": "/kumon-math-viewer/",
+  "scope": "/kumon-math-viewer/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f0ede8",
+  "theme_color": "#e8401c",
+  "lang": "ko",
+  "categories": ["education"],
+  "icons": [
+    {
+      "src": "icons/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "A단계",
+      "short_name": "A단계",
+      "description": "A단계 기초 연산 바로가기",
+      "url": "/kumon-math-viewer/?stage=A",
+      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "B단계",
+      "short_name": "B단계",
+      "description": "B단계 사칙연산 바로가기",
+      "url": "/kumon-math-viewer/?stage=B",
+      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "C단계",
+      "short_name": "C단계",
+      "description": "C단계 분수·소수 바로가기",
+      "url": "/kumon-math-viewer/?stage=C",
+      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
+    }
+  ]
+}
