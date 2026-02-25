@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>로그인 데모 ② · Google 로그인</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f8f6f2; --card:#ffffff; --border:#e8e2d8;
+  --ink:#1a1814; --ink-mid:#6a6058; --ink-light:#aaa098;
+  --a:#e8401c; --b:#1a7fd4; --c:#1aad6e; --gold:#f5a623;
+  --google:#4285f4; --shadow:0 4px 24px rgba(0,0,0,0.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+
+/* 배경 원 */
+body::before{content:'';position:fixed;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(66,133,244,0.06),transparent);top:-100px;right:-100px;pointer-events:none;}
+body::after{content:'';position:fixed;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(232,64,28,0.05),transparent);bottom:-50px;left:-50px;pointer-events:none;}
+
+.container{width:100%;max-width:440px;position:relative;z-index:1;}
+
+/* ── 로그인 카드 ── */
+.login-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:24px;padding:40px 36px;
+  box-shadow:var(--shadow);
+  animation:slideUp 0.5s ease;
+  display:flex;flex-direction:column;align-items:center;
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+.login-logo{
+  width:64px;height:64px;border-radius:18px;
+  background:linear-gradient(135deg,#e8401c,#f5a623);
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;font-weight:900;color:white;
+  box-shadow:0 6px 20px rgba(232,64,28,0.25);
+  margin-bottom:20px;
+}
+.login-title{font-size:22px;font-weight:800;margin-bottom:6px;}
+.login-sub{font-size:13px;color:var(--ink-mid);margin-bottom:32px;text-align:center;line-height:1.6;}
+
+/* Google 버튼 */
+.google-btn{
+  width:100%;padding:14px 20px;border-radius:12px;
+  border:2px solid var(--border);background:var(--card);
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  cursor:pointer;transition:all 0.2s;margin-bottom:14px;
+  font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:600;
+  color:var(--ink);
+}
+.google-btn:hover{border-color:var(--google);background:#f8fbff;box-shadow:0 4px 16px rgba(66,133,244,0.15);}
+.google-icon{width:22px;height:22px;flex-shrink:0;}
+
+.divider{display:flex;align-items:center;gap:12px;width:100%;margin:8px 0 16px;}
+.divider-line{flex:1;height:1px;background:var(--border);}
+.divider-txt{font-size:12px;color:var(--ink-light);}
+
+/* 이메일 로그인 폼 */
+.form-group{width:100%;margin-bottom:12px;}
+.form-label{font-size:12px;font-weight:600;color:var(--ink-mid);margin-bottom:6px;display:block;}
+.form-input{
+  width:100%;padding:12px 14px;border-radius:10px;
+  border:1.5px solid var(--border);background:var(--bg);
+  font-family:'Noto Sans KR',sans-serif;font-size:14px;
+  color:var(--ink);outline:none;transition:border-color 0.2s;
+}
+.form-input:focus{border-color:var(--google);background:white;}
+.form-input::placeholder{color:var(--ink-light);}
+
+.login-btn{
+  width:100%;padding:13px;border-radius:10px;border:none;
+  background:linear-gradient(135deg,var(--google),#5a95f5);
+  color:white;font-family:'Noto Sans KR',sans-serif;
+  font-size:14px;font-weight:700;cursor:pointer;
+  transition:all 0.2s;margin-top:4px;
+  box-shadow:0 4px 14px rgba(66,133,244,0.3);
+}
+.login-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(66,133,244,0.4);}
+
+.login-note{font-size:11px;color:var(--ink-light);text-align:center;margin-top:16px;line-height:1.6;}
+
+/* ── 로그인 완료 화면 ── */
+.app-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:24px;box-shadow:var(--shadow);overflow:hidden;
+  display:none;animation:slideUp 0.5s ease;
+}
+.app-top{
+  padding:24px 28px;
+  background:linear-gradient(135deg,#4285f4,#5a95f5);
+  color:white;display:flex;align-items:center;gap:14px;
+}
+.app-avatar{
+  width:48px;height:48px;border-radius:50%;
+  background:rgba(255,255,255,0.25);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;font-weight:700;border:2px solid rgba(255,255,255,0.5);
+  flex-shrink:0;
+}
+.app-user-info .name{font-size:16px;font-weight:700;}
+.app-user-info .email{font-size:12px;opacity:0.85;margin-top:2px;}
+.app-user-info .provider{font-size:10px;opacity:0.7;margin-top:4px;font-family:'DM Mono',monospace;}
+
+.app-body{padding:24px 28px;display:flex;flex-direction:column;gap:14px;}
+.info-row{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:10px;background:var(--bg);border:1px solid var(--border);}
+.info-icon{font-size:18px;flex-shrink:0;}
+.info-text{font-size:13px;}
+.info-text b{font-weight:700;display:block;margin-bottom:2px;}
+.info-text span{font-size:11px;color:var(--ink-mid);}
+
+.pro-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 10px;border-radius:20px;
+  background:rgba(66,133,244,0.1);border:1px solid rgba(66,133,244,0.2);
+  color:var(--google);font-size:11px;font-weight:700;
+  font-family:'DM Mono',monospace;margin-left:auto;
+}
+
+.logout-btn{
+  width:100%;padding:12px;border-radius:10px;
+  border:1.5px solid var(--border);background:none;
+  font-family:'Noto Sans KR',sans-serif;font-size:13px;
+  color:var(--ink-mid);cursor:pointer;transition:all 0.18s;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.logout-btn:hover{border-color:var(--a);color:var(--a);}
+
+/* 로딩 */
+.loading{display:none;flex-direction:column;align-items:center;gap:14px;padding:40px;}
+.spinner{width:36px;height:36px;border-radius:50%;border:3px solid #e8e2d8;border-top-color:var(--google);animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* 구현 안내 */
+.impl-guide{
+  margin-top:16px;background:var(--card);border:1px solid var(--border);
+  border-radius:16px;padding:20px 22px;box-shadow:var(--shadow);
+}
+.impl-title{font-size:12px;font-weight:700;color:var(--ink-mid);margin-bottom:12px;font-family:'DM Mono',monospace;letter-spacing:0.06em;}
+.impl-step{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start;}
+.impl-num{width:22px;height:22px;border-radius:50%;background:var(--google);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.impl-txt{font-size:12px;color:var(--ink-mid);line-height:1.6;}
+.impl-txt b{color:var(--ink);font-weight:700;}
+
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(8px);background:#1e1c18;color:#d0c8b8;padding:10px 20px;border-radius:9px;font-size:12px;opacity:0;transition:all 0.3s;z-index:999;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<div class="container">
+
+  <!-- 로그인 카드 -->
+  <div class="login-card" id="login-card">
+    <div class="login-logo">수학</div>
+    <div class="login-title">구몬수학 교재 뷰어</div>
+    <div class="login-sub">Google 계정으로 간편하게 로그인하거나<br>이메일과 비밀번호로 로그인하세요</div>
+
+    <!-- Google 버튼 -->
+    <button class="google-btn" onclick="googleLogin()">
+      <svg class="google-icon" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      Google로 계속하기
+    </button>
+
+    <div class="divider">
+      <div class="divider-line"></div>
+      <div class="divider-txt">또는</div>
+      <div class="divider-line"></div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">이메일</label>
+      <input class="form-input" type="email" id="email-input" placeholder="example@gmail.com" value="parent@gmail.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">비밀번호</label>
+      <input class="form-input" type="password" id="pw-input" placeholder="비밀번호 입력" value="demo1234">
+    </div>
+    <button class="login-btn" onclick="emailLogin()">로그인</button>
+    <div class="login-note">
+      데모: 이메일/비밀번호 입력 후 로그인 버튼<br>
+      또는 Google 버튼 클릭 (실제 연동 시뮬레이션)
+    </div>
+  </div>
+
+  <!-- 로딩 -->
+  <div class="login-card loading" id="loading">
+    <div class="spinner"></div>
+    <div style="font-size:13px;color:var(--ink-mid);" id="loading-txt">Google 계정 확인 중...</div>
+  </div>
+
+  <!-- 로그인 완료 -->
+  <div class="app-card" id="app-card">
+    <div class="app-top">
+      <div class="app-avatar" id="user-avatar">👤</div>
+      <div class="app-user-info">
+        <div class="name" id="user-name">이름</div>
+        <div class="email" id="user-email">email</div>
+        <div class="provider" id="user-provider">● GOOGLE</div>
+      </div>
+    </div>
+    <div class="app-body">
+      <div class="info-row">
+        <div class="info-icon">📚</div>
+        <div class="info-text"><b>학습 데이터 동기화</b><span>모든 기기에서 동일한 학습 기록 유지</span></div>
+        <div class="pro-badge">✓ ON</div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">🔒</div>
+        <div class="info-text"><b>Google 계정 보안</b><span>2단계 인증, 비정상 접근 차단</span></div>
+        <div class="pro-badge">✓ ON</div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">🌐</div>
+        <div class="info-text"><b>어디서나 접속 가능</b><span>같은 Google 계정으로 탭·PC·폰 모두</span></div>
+        <div class="pro-badge">✓ ON</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">🚪 로그아웃 (데모)</button>
+    </div>
+  </div>
+
+  <!-- 구현 안내 -->
+  <div class="impl-guide">
+    <div class="impl-title">IMPLEMENTATION GUIDE · Firebase 설정 방법</div>
+    <div class="impl-step">
+      <div class="impl-num">1</div>
+      <div class="impl-txt"><b>Firebase 프로젝트 생성</b><br>console.firebase.google.com → 새 프로젝트 (무료)</div>
+    </div>
+    <div class="impl-step">
+      <div class="impl-num">2</div>
+      <div class="impl-txt"><b>Authentication 활성화</b><br>Google 로그인 · 이메일 로그인 ON</div>
+    </div>
+    <div class="impl-step">
+      <div class="impl-num">3</div>
+      <div class="impl-txt"><b>index.html에 SDK 추가</b><br>Firebase SDK 스크립트 3줄 추가</div>
+    </div>
+    <div class="impl-step">
+      <div class="impl-num">4</div>
+      <div class="impl-txt"><b>완성!</b> 무료 · 서버 불필요 · Google 보안 자동 적용</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function googleLogin(){
+  // 실제로는 Firebase Google Auth 팝업
+  showLoading('Google 계정 확인 중...');
+  setTimeout(()=>{
+    showApp('백선생님', 'parent@gmail.com', 'GOOGLE', '👨‍👩‍👧');
+  }, 1800);
+}
+
+function emailLogin(){
+  const email = document.getElementById('email-input').value;
+  const pw    = document.getElementById('pw-input').value;
+  if(!email || !pw){ showToast('이메일과 비밀번호를 입력해 주세요!'); return; }
+  showLoading('로그인 확인 중...');
+  setTimeout(()=>{
+    const name = email.split('@')[0];
+    showApp(name, email, 'EMAIL/PASSWORD', '👤');
+  }, 1500);
+}
+
+function showLoading(txt){
+  document.getElementById('login-card').style.display='none';
+  const l = document.getElementById('loading');
+  l.style.display='flex';
+  document.getElementById('loading-txt').textContent=txt;
+}
+
+function showApp(name, email, provider, avatar){
+  document.getElementById('loading').style.display='none';
+  document.getElementById('user-name').textContent=name;
+  document.getElementById('user-email').textContent=email;
+  document.getElementById('user-provider').textContent='● '+provider;
+  document.getElementById('user-avatar').textContent=avatar;
+  document.getElementById('app-card').style.display='block';
+  showToast('✅ 로그인 완료!');
+}
+
+function logout(){
+  document.getElementById('app-card').style.display='none';
+  document.getElementById('login-card').style.display='flex';
+  document.getElementById('email-input').value='parent@gmail.com';
+  document.getElementById('pw-input').value='demo1234';
+  showToast('🚪 로그아웃 완료');
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2200);
+}
+</script>
+</body>
+</html>

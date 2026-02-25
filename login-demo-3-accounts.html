@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>로그인 데모 ③ · 학생별 계정 관리</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f0ede8;--card:#fff;--border:#e0dbd2;
+  --ink:#1a1814;--ink-mid:#4a4540;--ink-light:#9a9088;
+  --a:#e8401c;--b:#1a7fd4;--c:#1aad6e;--gold:#f5a623;--purple:#9b59b6;
+  --shadow:0 4px 24px rgba(0,0,0,0.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;}
+
+/* 헤더 */
+.header{background:var(--card);border-bottom:1px solid var(--border);padding:0 20px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow);}
+.h-logo{display:flex;align-items:center;gap:10px;}
+.h-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#e8401c,#f5a623);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:12px;}
+.h-title{font-size:14px;font-weight:700;}
+.h-role{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;font-family:'DM Mono',monospace;}
+.h-role.admin{background:rgba(232,64,28,0.1);color:var(--a);}
+.h-role.student{background:rgba(26,173,110,0.1);color:var(--c);}
+
+/* 화면 전환 */
+.screen{display:none;}
+.screen.active{display:block;animation:fadeIn 0.3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── 역할 선택 화면 ── */
+.role-wrap{max-width:480px;margin:0 auto;padding:40px 20px;}
+.role-title{font-size:22px;font-weight:800;margin-bottom:6px;}
+.role-sub{font-size:13px;color:var(--ink-mid);margin-bottom:28px;line-height:1.6;}
+.role-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.role-card{background:var(--card);border:2px solid var(--border);border-radius:18px;padding:28px 20px;text-align:center;cursor:pointer;transition:all 0.2s;}
+.role-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);}
+.role-card.admin-card:hover{border-color:var(--a);}
+.role-card.student-card:hover{border-color:var(--c);}
+.role-emoji{font-size:36px;margin-bottom:12px;}
+.role-name{font-size:15px;font-weight:700;margin-bottom:4px;}
+.role-desc{font-size:11px;color:var(--ink-mid);}
+
+/* ── 관리자 로그인 ── */
+.admin-login{max-width:400px;margin:0 auto;padding:32px 20px;}
+.back-btn{display:flex;align-items:center;gap:5px;color:var(--ink-mid);font-size:13px;cursor:pointer;margin-bottom:20px;border:none;background:none;padding:0;font-family:'Noto Sans KR',sans-serif;}
+.back-btn:hover{color:var(--a);}
+.login-box{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:28px;box-shadow:var(--shadow);}
+.login-box-title{font-size:18px;font-weight:700;margin-bottom:4px;}
+.login-box-sub{font-size:12px;color:var(--ink-mid);margin-bottom:24px;}
+.form-group{margin-bottom:14px;}
+.form-label{font-size:12px;font-weight:600;color:var(--ink-mid);margin-bottom:5px;display:block;}
+.form-input{width:100%;padding:11px 13px;border-radius:9px;border:1.5px solid var(--border);background:var(--bg);font-family:'Noto Sans KR',sans-serif;font-size:14px;color:var(--ink);outline:none;transition:border-color 0.2s;}
+.form-input:focus{border-color:var(--b);}
+.submit-btn{width:100%;padding:12px;border-radius:9px;border:none;background:var(--a);color:white;font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.18s;margin-top:4px;}
+.submit-btn:hover{background:#c8301c;}
+.demo-hint{font-size:11px;color:var(--ink-light);text-align:center;margin-top:12px;}
+.demo-hint span{color:var(--gold);}
+
+/* ── 관리자 대시보드 ── */
+.admin-dash{max-width:800px;margin:0 auto;padding:28px 20px 60px;}
+.dash-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
+.dash-stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);}
+.dash-stat-val{font-family:'DM Mono',monospace;font-size:28px;font-weight:500;margin-bottom:4px;}
+.dash-stat-lbl{font-size:11px;color:var(--ink-mid);}
+
+.section-title{font-size:12px;font-weight:700;color:var(--ink-mid);margin-bottom:12px;font-family:'DM Mono',monospace;letter-spacing:0.06em;}
+.student-table{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:20px;}
+.st-head{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:0;padding:11px 16px;background:var(--bg);border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--ink-mid);font-family:'DM Mono',monospace;}
+.st-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:0;padding:13px 16px;border-bottom:1px solid var(--border);align-items:center;transition:background 0.15s;}
+.st-row:last-child{border:none;}
+.st-row:hover{background:var(--bg);}
+.st-name{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;}
+.st-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;}
+.st-stage{font-size:12px;font-family:'DM Mono',monospace;}
+.st-progress{display:flex;flex-direction:column;gap:3px;}
+.st-prog-bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden;width:70px;}
+.st-prog-fill{height:100%;border-radius:3px;}
+.st-prog-pct{font-size:10px;color:var(--ink-light);font-family:'DM Mono',monospace;}
+.st-last{font-size:11px;color:var(--ink-light);}
+.st-action{display:flex;gap:4px;}
+.st-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:none;font-size:11px;cursor:pointer;transition:all 0.15s;color:var(--ink-mid);}
+.st-btn:hover{border-color:var(--b);color:var(--b);}
+.st-btn.danger:hover{border-color:var(--a);color:var(--a);}
+
+.add-student-btn{display:flex;align-items:center;gap:6px;padding:11px 18px;border-radius:10px;border:1.5px dashed var(--border);background:none;font-family:'Noto Sans KR',sans-serif;font-size:13px;color:var(--ink-mid);cursor:pointer;transition:all 0.18s;width:100%;justify-content:center;}
+.add-student-btn:hover{border-color:var(--c);color:var(--c);}
+
+/* ── 학생 선택 ── */
+.student-select{max-width:480px;margin:0 auto;padding:32px 20px;}
+.student-cards{display:flex;flex-direction:column;gap:12px;}
+.student-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all 0.18s;box-shadow:var(--shadow);}
+.student-card:hover{transform:translateX(4px);border-color:var(--c);}
+.s-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:white;flex-shrink:0;}
+.s-info{flex:1;}
+.s-name{font-size:15px;font-weight:700;margin-bottom:3px;}
+.s-meta{font-size:12px;color:var(--ink-mid);}
+.s-badge{padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;font-family:'DM Mono',monospace;}
+
+/* ── 학생 대시보드 ── */
+.student-dash{max-width:600px;margin:0 auto;padding:24px 20px 60px;}
+.s-welcome{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px 22px;display:flex;align-items:center;gap:14px;margin-bottom:18px;box-shadow:var(--shadow);}
+.s-welcome-avatar{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:white;flex-shrink:0;}
+.s-welcome-name{font-size:17px;font-weight:700;margin-bottom:3px;}
+.s-welcome-sub{font-size:12px;color:var(--ink-mid);}
+
+.progress-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.prog-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;box-shadow:var(--shadow);}
+.prog-stage{font-size:20px;font-weight:700;margin-bottom:4px;}
+.prog-pct{font-size:22px;font-weight:700;font-family:'DM Mono',monospace;margin-bottom:2px;}
+.prog-lbl{font-size:10px;color:var(--ink-mid);}
+.prog-bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:8px;}
+.prog-fill{height:100%;border-radius:3px;}
+
+.recent-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);margin-bottom:14px;}
+.recent-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.recent-item:last-child{border:none;padding-bottom:0;}
+.recent-icon{font-size:16px;}
+.recent-txt{flex:1;font-size:12px;}
+.recent-txt b{font-weight:600;display:block;}
+.recent-txt span{color:var(--ink-mid);}
+.recent-time{font-size:10px;color:var(--ink-light);font-family:'DM Mono',monospace;}
+
+.switch-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:11px;border-radius:10px;border:1px solid var(--border);background:none;font-family:'Noto Sans KR',sans-serif;font-size:13px;color:var(--ink-mid);cursor:pointer;transition:all 0.18s;width:100%;}
+.switch-btn:hover{border-color:var(--a);color:var(--a);}
+
+/* 토스트 */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(8px);background:#1e1c18;color:#d0c8b8;padding:10px 20px;border-radius:9px;font-size:12px;opacity:0;transition:all 0.3s;z-index:999;white-space:nowrap;border:1px solid rgba(255,255,255,0.1);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* 모달 */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;}
+.modal-bg.show{display:flex;}
+.modal{background:var(--card);border-radius:18px;padding:28px;width:90%;max-width:360px;animation:fadeIn 0.3s ease;}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:16px;}
+.modal-btns{display:flex;gap:8px;margin-top:20px;}
+.modal-btn{flex:1;padding:11px;border-radius:9px;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all 0.18s;}
+.modal-btn.cancel{background:var(--bg);color:var(--ink-mid);}
+.modal-btn.confirm{background:var(--c);color:white;}
+
+@media(max-width:580px){
+  .dash-grid{grid-template-columns:repeat(2,1fr);}
+  .st-head,.st-row{grid-template-columns:2fr 1fr 1fr auto;}
+  .st-last{display:none;}
+  .progress-cards{grid-template-columns:repeat(3,1fr);}
+}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<!-- 헤더 -->
+<header class="header">
+  <div class="h-logo">
+    <div class="h-icon">수학</div>
+    <div>
+      <div class="h-title">구몬수학 교재 뷰어</div>
+    </div>
+  </div>
+  <div class="h-role admin" id="h-role" style="display:none;">관리자</div>
+</header>
+
+<!-- ① 역할 선택 -->
+<div class="screen active" id="screen-role">
+  <div class="role-wrap">
+    <div class="role-title">누구로 로그인할까요?</div>
+    <div class="role-sub">관리자(학부모)는 모든 학생 계정을 관리하고<br>학습 현황을 한눈에 볼 수 있습니다.</div>
+    <div class="role-cards">
+      <div class="role-card admin-card" onclick="goScreen('screen-admin-login')">
+        <div class="role-emoji">👨‍👩‍👧</div>
+        <div class="role-name">학부모 / 선생님</div>
+        <div class="role-desc">전체 관리 · 학생 추가<br>학습 현황 모니터링</div>
+      </div>
+      <div class="role-card student-card" onclick="goScreen('screen-student-select')">
+        <div class="role-emoji">🧒</div>
+        <div class="role-name">학생</div>
+        <div class="role-desc">내 학습 현황<br>교재 풀기</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ② 관리자 로그인 -->
+<div class="screen" id="screen-admin-login">
+  <div class="admin-login">
+    <button class="back-btn" onclick="goScreen('screen-role')">← 돌아가기</button>
+    <div class="login-box">
+      <div class="login-box-title">관리자 로그인</div>
+      <div class="login-box-sub">학부모·선생님 계정으로 로그인하세요</div>
+      <div class="form-group">
+        <label class="form-label">아이디</label>
+        <input class="form-input" type="text" id="admin-id" placeholder="admin" value="admin">
+      </div>
+      <div class="form-group">
+        <label class="form-label">비밀번호</label>
+        <input class="form-input" type="password" id="admin-pw" placeholder="비밀번호" value="1234">
+      </div>
+      <button class="submit-btn" onclick="adminLogin()">관리자로 로그인</button>
+      <div class="demo-hint">데모 계정: <span>admin / 1234</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ 관리자 대시보드 -->
+<div class="screen" id="screen-admin-dash">
+  <div class="admin-dash">
+    <!-- 통계 -->
+    <div class="dash-grid">
+      <div class="dash-stat">
+        <div class="dash-stat-val" style="color:var(--c);">3</div>
+        <div class="dash-stat-lbl">등록 학생</div>
+      </div>
+      <div class="dash-stat">
+        <div class="dash-stat-val" style="color:var(--b);">47%</div>
+        <div class="dash-stat-lbl">평균 진도율</div>
+      </div>
+      <div class="dash-stat">
+        <div class="dash-stat-val" style="color:var(--gold);">오늘</div>
+        <div class="dash-stat-lbl">마지막 학습</div>
+      </div>
+    </div>
+
+    <!-- 학생 목록 -->
+    <div class="section-title">STUDENT ACCOUNTS</div>
+    <div class="student-table">
+      <div class="st-head">
+        <div>이름</div><div>단계</div><div>진도</div><div>최근 학습</div><div>관리</div>
+      </div>
+      <div class="st-row">
+        <div class="st-name">
+          <div class="st-avatar" style="background:#e8401c;">민</div>
+          김민준
+        </div>
+        <div class="st-stage" style="color:#e8401c;">A단계</div>
+        <div class="st-progress">
+          <div class="st-prog-bar"><div class="st-prog-fill" style="width:60%;background:#e8401c;"></div></div>
+          <div class="st-prog-pct">6/10</div>
+        </div>
+        <div class="st-last">오늘</div>
+        <div class="st-action">
+          <button class="st-btn" onclick="viewStudent('minjun')">보기</button>
+          <button class="st-btn danger" onclick="showModal('김민준 계정을 초기화할까요?')">↺</button>
+        </div>
+      </div>
+      <div class="st-row">
+        <div class="st-name">
+          <div class="st-avatar" style="background:#1a7fd4;">지</div>
+          이지은
+        </div>
+        <div class="st-stage" style="color:#1a7fd4;">B단계</div>
+        <div class="st-progress">
+          <div class="st-prog-bar"><div class="st-prog-fill" style="width:30%;background:#1a7fd4;"></div></div>
+          <div class="st-prog-pct">3/10</div>
+        </div>
+        <div class="st-last">어제</div>
+        <div class="st-action">
+          <button class="st-btn" onclick="viewStudent('jieun')">보기</button>
+          <button class="st-btn danger" onclick="showModal('이지은 계정을 초기화할까요?')">↺</button>
+        </div>
+      </div>
+      <div class="st-row">
+        <div class="st-name">
+          <div class="st-avatar" style="background:#1aad6e;">현</div>
+          박현서
+        </div>
+        <div class="st-stage" style="color:#1aad6e;">C단계</div>
+        <div class="st-progress">
+          <div class="st-prog-bar"><div class="st-prog-fill" style="width:10%;background:#1aad6e;"></div></div>
+          <div class="st-prog-pct">1/10</div>
+        </div>
+        <div class="st-last">3일 전</div>
+        <div class="st-action">
+          <button class="st-btn" onclick="viewStudent('hyunseo')">보기</button>
+          <button class="st-btn danger" onclick="showModal('박현서 계정을 초기화할까요?')">↺</button>
+        </div>
+      </div>
+    </div>
+    <button class="add-student-btn" onclick="showModal('학생 추가 기능은 실제 배포 시 활성화됩니다.')">＋ 학생 계정 추가</button>
+
+    <button class="switch-btn" onclick="logout()">🚪 로그아웃</button>
+  </div>
+</div>
+
+<!-- ④ 학생 선택 -->
+<div class="screen" id="screen-student-select">
+  <div class="student-select">
+    <button class="back-btn" onclick="goScreen('screen-role')">← 돌아가기</button>
+    <div style="font-size:18px;font-weight:700;margin-bottom:4px;">누구예요?</div>
+    <div style="font-size:13px;color:var(--ink-mid);margin-bottom:20px;">이름을 선택하고 PIN을 입력하세요</div>
+    <div class="student-cards">
+      <div class="student-card" onclick="studentLogin('minjun','김민준','A','#e8401c','민')">
+        <div class="s-avatar" style="background:#e8401c;">민</div>
+        <div class="s-info">
+          <div class="s-name">김민준</div>
+          <div class="s-meta">A단계 · 진도 60%</div>
+        </div>
+        <div class="s-badge" style="background:rgba(232,64,28,0.1);color:#e8401c;">PIN 인증</div>
+      </div>
+      <div class="student-card" onclick="studentLogin('jieun','이지은','B','#1a7fd4','지')">
+        <div class="s-avatar" style="background:#1a7fd4;">지</div>
+        <div class="s-info">
+          <div class="s-name">이지은</div>
+          <div class="s-meta">B단계 · 진도 30%</div>
+        </div>
+        <div class="s-badge" style="background:rgba(26,127,212,0.1);color:#1a7fd4;">PIN 인증</div>
+      </div>
+      <div class="student-card" onclick="studentLogin('hyunseo','박현서','C','#1aad6e','현')">
+        <div class="s-avatar" style="background:#1aad6e;">현</div>
+        <div class="s-info">
+          <div class="s-name">박현서</div>
+          <div class="s-meta">C단계 · 진도 10%</div>
+        </div>
+        <div class="s-badge" style="background:rgba(26,173,110,0.1);color:#1aad6e;">PIN 인증</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ⑤ 학생 대시보드 -->
+<div class="screen" id="screen-student-dash">
+  <div class="student-dash">
+    <div class="s-welcome" id="s-welcome">
+      <div class="s-welcome-avatar" id="s-welcome-avatar">민</div>
+      <div>
+        <div class="s-welcome-name" id="s-welcome-name">김민준</div>
+        <div class="s-welcome-sub" id="s-welcome-sub">오늘도 열심히 공부해요! 🌟</div>
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-bottom:10px;">내 학습 진도</div>
+    <div class="progress-cards" id="prog-cards"></div>
+
+    <div class="section-title" style="margin-bottom:10px;">최근 학습 기록</div>
+    <div class="recent-card">
+      <div class="recent-item">
+        <div class="recent-icon">📝</div>
+        <div class="recent-txt"><b>A단계 6페이지 완료</b><span>덧셈 연습 ②</span></div>
+        <div class="recent-time">오늘 14:32</div>
+      </div>
+      <div class="recent-item">
+        <div class="recent-icon">🎤</div>
+        <div class="recent-txt"><b>음성 채점 완료</b><span>12문제 중 11개 정답</span></div>
+        <div class="recent-time">오늘 14:18</div>
+      </div>
+      <div class="recent-item">
+        <div class="recent-icon">✏️</div>
+        <div class="recent-txt"><b>S펜 필기 저장</b><span>A단계 5페이지</span></div>
+        <div class="recent-time">어제 16:05</div>
+      </div>
+    </div>
+
+    <button class="switch-btn" onclick="goScreen('screen-student-select')">👤 학생 전환</button>
+  </div>
+</div>
+
+<!-- 모달 -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <div class="modal-title" id="modal-msg">확인하시겠습니까?</div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="hideModal()">취소</button>
+      <button class="modal-btn confirm" onclick="hideModal();showToast('✅ 처리됐습니다!')">확인</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let curStudent = null;
+
+const STUDENTS = {
+  minjun:  {name:'김민준', stage:'A', color:'#e8401c', avatar:'민', prog:[60,0,0]},
+  jieun:   {name:'이지은', stage:'B', color:'#1a7fd4', avatar:'지', prog:[100,30,0]},
+  hyunseo: {name:'박현서', stage:'C', color:'#1aad6e', avatar:'현', prog:[100,80,10]},
+};
+
+function goScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  // 헤더 역할 배지
+  const role = document.getElementById('h-role');
+  if(id==='screen-admin-dash'){ role.style.display='flex'; role.textContent='관리자'; role.className='h-role admin'; }
+  else if(id==='screen-student-dash'){ role.style.display='flex'; role.textContent='학생'; role.className='h-role student'; }
+  else { role.style.display='none'; }
+}
+
+function adminLogin(){
+  const id = document.getElementById('admin-id').value;
+  const pw = document.getElementById('admin-pw').value;
+  if(id==='admin' && pw==='1234'){
+    goScreen('screen-admin-dash');
+    showToast('✅ 관리자로 로그인했습니다!');
+  } else {
+    showToast('❌ 아이디 또는 비밀번호가 틀렸습니다');
+  }
+}
+
+function studentLogin(key, name, stage, color, avatar){
+  curStudent = STUDENTS[key];
+  // 실제로는 PIN 입력 → 여기선 바로 진입 (데모)
+  showToast(`${name} 학생으로 로그인!`);
+  loadStudentDash(STUDENTS[key]);
+  goScreen('screen-student-dash');
+}
+
+function loadStudentDash(s){
+  document.getElementById('s-welcome-avatar').textContent = s.avatar;
+  document.getElementById('s-welcome-avatar').style.background = s.color;
+  document.getElementById('s-welcome-name').textContent = s.name;
+  document.getElementById('s-welcome-sub').textContent = `현재 ${s.stage}단계 학습 중 🌟`;
+
+  const stages = [{l:'A',c:'#e8401c'},{l:'B',c:'#1a7fd4'},{l:'C',c:'#1aad6e'}];
+  const pc = document.getElementById('prog-cards');
+  pc.innerHTML = '';
+  stages.forEach((st,i)=>{
+    const p = s.prog[i];
+    pc.innerHTML += `
+      <div class="prog-card">
+        <div class="prog-stage" style="color:${st.c};">${st.l}단계</div>
+        <div class="prog-pct" style="color:${st.c};">${p}%</div>
+        <div class="prog-lbl">${Math.round(p/10)}/10 완료</div>
+        <div class="prog-bar"><div class="prog-fill" style="width:${p}%;background:${st.c};"></div></div>
+      </div>`;
+  });
+}
+
+function viewStudent(key){
+  const s = STUDENTS[key];
+  loadStudentDash(s);
+  goScreen('screen-student-dash');
+  showToast(`${s.name} 학습 현황 보기`);
+}
+
+function logout(){
+  goScreen('screen-role');
+  showToast('🚪 로그아웃 완료');
+}
+
+function showModal(msg){
+  document.getElementById('modal-msg').textContent = msg;
+  document.getElementById('modal-bg').classList.add('show');
+}
+function hideModal(){ document.getElementById('modal-bg').classList.remove('show'); }
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2200);
+}
+</script>
+</body>
+</html>
