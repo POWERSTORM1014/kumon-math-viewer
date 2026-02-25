@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>구몬수학 · 음성 채점</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&family=Noto+Serif+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f2ed;--card:#fff;--border:#e0dbd2;
+  --ink:#1a1814;--ink-mid:#4a4540;--ink-light:#9a9088;
+  --a:#e8401c;--b:#1a7fd4;--c:#1aad6e;--gold:#f5a623;
+  --shadow:0 4px 24px rgba(0,0,0,0.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;}
+
+/* 헤더 */
+.header{background:var(--card);border-bottom:1px solid var(--border);padding:0 20px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow);}
+.h-logo{display:flex;align-items:center;gap:10px;}
+.h-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#e8401c,#f5a623);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:12px;}
+.h-title{font-size:14px;font-weight:700;}
+.h-sub{font-size:10px;color:var(--ink-light);}
+.h-score{display:flex;align-items:center;gap:6px;padding:5px 13px;border-radius:20px;background:linear-gradient(135deg,#1aad6e,#76d4a8);color:white;font-family:'DM Mono',monospace;font-size:12px;}
+
+/* 메인 */
+.main{max-width:680px;margin:0 auto;padding:24px 16px 80px;}
+
+/* 스코어 */
+.scoreboard{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);margin-bottom:18px;flex-wrap:wrap;}
+.sc-item{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;min-width:48px;}
+.sc-val{font-family:'DM Mono',monospace;font-size:24px;font-weight:500;}
+.sc-div{width:1px;height:32px;background:var(--border);}
+.sc-bar-wrap{flex:2;min-width:100px;}
+.sc-bar-lbl{font-size:10px;color:var(--ink-light);margin-bottom:4px;font-family:'DM Mono',monospace;}
+.sc-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.sc-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#1aad6e,#76d4a8);transition:width 0.5s;}
+.sc-lbl{font-size:10px;color:var(--ink-light);}
+
+/* 유형 탭 */
+.type-tabs{display:flex;gap:5px;margin-bottom:18px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
+.type-tabs::-webkit-scrollbar{display:none;}
+.type-tab{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 12px;border-radius:10px;border:2px solid var(--border);background:var(--card);cursor:pointer;transition:all 0.18s;flex-shrink:0;min-width:68px;}
+.type-tab:hover{border-color:var(--a);}
+.type-tab.on{border-color:var(--a);background:#fde8e3;}
+.type-tab-icon{font-size:18px;}
+.type-tab-name{font-size:9px;font-weight:700;color:var(--ink-mid);white-space:nowrap;}
+.type-tab.on .type-tab-name{color:var(--a);}
+
+/* 문제 카드 */
+.prob-card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;animation:slideIn 0.3s ease;}
+@keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.prob-topbar{height:5px;background:linear-gradient(90deg,var(--a),var(--gold));transition:background 0.4s;}
+.prob-inner{padding:22px 24px;}
+.prob-meta{display:flex;align-items:center;gap:7px;margin-bottom:16px;}
+.prob-badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;font-family:'DM Mono',monospace;}
+.new-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:none;font-size:11px;color:var(--ink-mid);cursor:pointer;transition:all 0.15s;margin-left:auto;}
+.new-btn:hover{border-color:var(--a);color:var(--a);}
+.prob-num{font-size:11px;color:var(--ink-light);font-family:'DM Mono',monospace;}
+
+/* 수식 */
+.eq-wrap{display:flex;align-items:center;justify-content:center;min-height:100px;margin-bottom:20px;}
+.eq-h{font-family:'Noto Serif KR',serif;font-size:48px;font-weight:700;display:flex;align-items:center;gap:12px;}
+.eq-op{color:var(--a);}
+.eq-eq{color:var(--ink-light);}
+.eq-blank{display:inline-flex;align-items:center;justify-content:center;min-width:68px;height:56px;border-bottom:4px solid var(--ink);font-size:48px;color:var(--b);transition:all 0.3s;}
+.eq-blank.correct{border-color:var(--c);color:var(--c);}
+.eq-blank.wrong{border-color:var(--a);color:var(--a);}
+.eq-v{font-family:'Noto Serif KR',serif;display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:40px;font-weight:700;}
+.eq-v-op{color:var(--a);font-size:32px;}
+.eq-v-line{width:100%;height:3px;background:var(--ink);margin:2px 0 5px;border-radius:2px;}
+.eq-gugu{font-family:'Noto Serif KR',serif;font-size:44px;font-weight:700;display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#fde8e3,#fff8f0);padding:14px 24px;border-radius:14px;border:2px solid #f4a48e;}
+.eq-dv{font-family:'Noto Serif KR',serif;font-size:36px;font-weight:700;display:flex;align-items:stretch;}
+.div-divisor{align-self:flex-end;padding-bottom:5px;padding-right:3px;}
+.div-bracket{border-left:3px solid var(--ink);border-top:3px solid var(--ink);padding:5px 12px 5px 8px;display:flex;flex-direction:column;gap:3px;}
+.div-q{color:var(--b);}
+
+/* ── 입력 영역 ── */
+.input-area{display:flex;flex-direction:column;align-items:center;gap:14px;}
+
+/* 음성 상태창 */
+.voice-box{
+  width:100%;max-width:340px;min-height:48px;
+  padding:10px 16px;border-radius:12px;
+  border:2px dashed var(--border);
+  background:var(--bg);
+  font-size:15px;font-family:'DM Mono',monospace;
+  color:var(--ink-light);text-align:center;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.25s;
+}
+.voice-box.ready   {border-color:var(--border);color:var(--ink-light);}
+.voice-box.listening{border-color:var(--a);border-style:solid;background:#fff5f3;color:var(--a);}
+.voice-box.interim {border-color:var(--gold);border-style:solid;background:#fffbf0;color:#b07c10;}
+.voice-box.correct {border-color:var(--c);border-style:solid;background:#f0fbf6;color:var(--c);}
+.voice-box.wrong   {border-color:var(--a);border-style:solid;background:#fff5f3;color:var(--a);}
+.voice-box.error   {border-color:#9b59b6;border-style:solid;background:#f8f0ff;color:#9b59b6;}
+
+/* 마이크 버튼 */
+.mic-btn{
+  width:72px;height:72px;border-radius:50%;border:none;
+  background:linear-gradient(135deg,var(--a),var(--gold));
+  color:white;font-size:28px;cursor:pointer;
+  transition:all 0.2s;box-shadow:0 4px 16px rgba(232,64,28,0.3);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;user-select:none;-webkit-user-select:none;
+}
+.mic-btn:hover{transform:scale(1.05);}
+.mic-btn:active{transform:scale(0.95);}
+.mic-btn.on{
+  background:linear-gradient(135deg,#c01010,#e8401c);
+  animation:micPulse 1s infinite;
+}
+@keyframes micPulse{
+  0%,100%{box-shadow:0 4px 16px rgba(200,16,16,0.4),0 0 0 0 rgba(200,16,16,0.2);}
+  50%{box-shadow:0 4px 16px rgba(200,16,16,0.4),0 0 0 16px rgba(200,16,16,0);}
+}
+.mic-lbl{font-size:11px;color:var(--ink-light);font-family:'DM Mono',monospace;}
+
+/* 키패드 */
+.keypad-wrap{width:100%;max-width:280px;}
+.keypad-display{
+  width:100%;padding:10px 14px;border-radius:10px;
+  border:2px solid var(--border);background:var(--bg);
+  font-family:'DM Mono',monospace;font-size:28px;font-weight:500;
+  color:var(--ink);text-align:center;margin-bottom:8px;
+  min-height:52px;display:flex;align-items:center;justify-content:center;
+  transition:border-color 0.2s;letter-spacing:0.05em;
+}
+.keypad-display.has-val{border-color:var(--b);color:var(--b);}
+.keypad-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.kp-btn{
+  padding:14px 0;border-radius:10px;border:1.5px solid var(--border);
+  background:var(--card);font-family:'DM Mono',monospace;font-size:20px;font-weight:500;
+  color:var(--ink);cursor:pointer;transition:all 0.12s;
+  display:flex;align-items:center;justify-content:center;
+}
+.kp-btn:hover{background:var(--bg);border-color:var(--b);}
+.kp-btn:active{transform:scale(0.94);background:#e0eefc;}
+.kp-btn.zero{grid-column:span 2;}
+.kp-btn.del{background:#fde8e3;border-color:#f4a48e;color:var(--a);}
+.kp-btn.del:hover{background:#fbd0c8;}
+.kp-submit{
+  width:100%;margin-top:6px;padding:13px;border-radius:10px;border:none;
+  background:var(--b);color:white;font-size:15px;font-weight:700;
+  font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all 0.18s;
+}
+.kp-submit:hover{background:#1567b0;}
+.kp-submit:active{transform:scale(0.97);}
+
+/* 탭 토글 (음성 / 키패드) */
+.input-tabs{display:flex;gap:0;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:4px;}
+.input-tab{flex:1;padding:8px;text-align:center;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.18s;color:var(--ink-mid);background:var(--card);}
+.input-tab.on{background:var(--a);color:white;}
+
+/* 피드백 */
+.feedback{text-align:center;padding:11px 16px;border-radius:12px;font-size:15px;font-weight:700;display:none;animation:popIn 0.3s ease;width:100%;}
+@keyframes popIn{from{transform:scale(0.85);opacity:0}to{transform:scale(1);opacity:1}}
+.feedback.correct{display:block;background:#dcf5eb;color:var(--c);border:2px solid var(--c);}
+.feedback.wrong  {display:block;background:#fde8e3;color:var(--a);border:2px solid var(--a);}
+.feedback.perfect{display:block;background:linear-gradient(135deg,#fef9e7,#fde8e3);color:var(--gold);border:2px solid var(--gold);}
+
+/* 이력 */
+.history-wrap{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow);}
+.history-hd{font-size:10px;font-weight:700;color:var(--ink-light);margin-bottom:8px;font-family:'DM Mono',monospace;letter-spacing:0.08em;}
+.history-list{display:flex;flex-direction:column;gap:4px;max-height:160px;overflow-y:auto;}
+.h-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;background:var(--bg);border:1px solid var(--border);font-size:11px;font-family:'DM Mono',monospace;}
+.h-eq{flex:1;color:var(--ink-mid);}
+.h-my{font-weight:700;}
+.h-my.c{color:var(--c);}
+.h-my.w{color:var(--a);}
+
+/* 토스트 */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(8px);background:#1e1c18;color:#d0c8b8;padding:10px 20px;border-radius:9px;font-size:12px;opacity:0;transition:all 0.3s;z-index:9999;white-space:nowrap;border:1px solid rgba(255,255,255,0.1);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* 음성 불가 배너 */
+.no-voice-banner{background:#fff8f0;border:1.5px solid var(--gold);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--ink-mid);margin-bottom:14px;display:none;line-height:1.6;}
+
+@media(max-width:500px){
+  .eq-h,.eq-gugu{font-size:36px;} .eq-v{font-size:30px;}
+  .prob-inner{padding:16px 18px;} .main{padding:16px 10px 60px;}
+}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<!-- 헤더 -->
+<header class="header">
+  <div class="h-logo">
+    <div class="h-icon">수학</div>
+    <div><div class="h-title">구몬수학 음성 채점</div><div class="h-sub">말하거나 키패드로 입력</div></div>
+  </div>
+  <div class="h-score">🎯 <span id="h-score">0 / 0</span></div>
+</header>
+
+<main class="main">
+
+  <!-- 음성 불가 배너 -->
+  <div class="no-voice-banner" id="no-voice-banner">
+    ⚠️ <b>음성 인식을 사용할 수 없습니다.</b><br>
+    이 파일을 GitHub Pages에 올리거나, PC에 저장 후 크롬으로 열어주세요.<br>
+    지금은 하단 키패드로 답을 입력할 수 있습니다.
+  </div>
+
+  <!-- 스코어 -->
+  <div class="scoreboard">
+    <div class="sc-item"><div class="sc-val" id="sc-c" style="color:var(--c);">0</div><div class="sc-lbl">정답</div></div>
+    <div class="sc-div"></div>
+    <div class="sc-item"><div class="sc-val" id="sc-w" style="color:var(--a);">0</div><div class="sc-lbl">오답</div></div>
+    <div class="sc-div"></div>
+    <div class="sc-item"><div class="sc-val" id="sc-s" style="color:var(--gold);">0</div><div class="sc-lbl">연속</div></div>
+    <div class="sc-div"></div>
+    <div class="sc-bar-wrap">
+      <div class="sc-bar-lbl">정답률 <span id="sc-pct">0%</span></div>
+      <div class="sc-bar"><div class="sc-bar-fill" id="sc-bar" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <!-- 유형 탭 -->
+  <div class="type-tabs">
+    <div class="type-tab on" onclick="setType(this,'add-h')"><div class="type-tab-icon">➕</div><div class="type-tab-name">가로 덧셈</div></div>
+    <div class="type-tab"    onclick="setType(this,'sub-h')"><div class="type-tab-icon">➖</div><div class="type-tab-name">가로 뺄셈</div></div>
+    <div class="type-tab"    onclick="setType(this,'add-v')"><div class="type-tab-icon">📐</div><div class="type-tab-name">세로 덧셈</div></div>
+    <div class="type-tab"    onclick="setType(this,'sub-v')"><div class="type-tab-icon">📏</div><div class="type-tab-name">세로 뺄셈</div></div>
+    <div class="type-tab"    onclick="setType(this,'gugu')" ><div class="type-tab-icon">✖️</div><div class="type-tab-name">구구단</div></div>
+    <div class="type-tab"    onclick="setType(this,'mul-v')"><div class="type-tab-icon">🔢</div><div class="type-tab-name">세로 곱셈</div></div>
+    <div class="type-tab"    onclick="setType(this,'div-h')"><div class="type-tab-icon">➗</div><div class="type-tab-name">가로 나눗셈</div></div>
+    <div class="type-tab"    onclick="setType(this,'div-v')"><div class="type-tab-icon">📊</div><div class="type-tab-name">세로 나눗셈</div></div>
+  </div>
+
+  <!-- 문제 카드 -->
+  <div class="prob-card" id="prob-card">
+    <div class="prob-topbar" id="prob-topbar"></div>
+    <div class="prob-inner">
+      <div class="prob-meta">
+        <span class="prob-badge" id="prob-badge">가로 덧셈</span>
+        <button class="new-btn" onclick="newProblem()">🔄 새 문제</button>
+        <span class="prob-num" id="prob-num">#1</span>
+      </div>
+      <div class="eq-wrap" id="eq-wrap"></div>
+
+      <!-- 입력 방식 탭 -->
+      <div class="input-tabs">
+        <div class="input-tab on" id="tab-voice"  onclick="switchInputTab('voice')">🎤 음성 입력</div>
+        <div class="input-tab"    id="tab-keypad" onclick="switchInputTab('keypad')">🔢 키패드 입력</div>
+      </div>
+
+      <div class="input-area">
+        <!-- ── 음성 패널 ── -->
+        <div id="panel-voice" style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;">
+          <div class="voice-box ready" id="voice-box">🎤 버튼을 눌러 답을 말하세요</div>
+          <button class="mic-btn" id="mic-btn" onclick="toggleMic()">🎤</button>
+          <div class="mic-lbl" id="mic-lbl">탭하여 음성 입력 시작</div>
+        </div>
+
+        <!-- ── 키패드 패널 ── -->
+        <div id="panel-keypad" style="display:none;width:100%;display:none;flex-direction:column;align-items:center;">
+          <div class="keypad-wrap">
+            <div class="keypad-display" id="kp-display">?</div>
+            <div class="keypad-grid">
+              <button class="kp-btn" onclick="kpInput('1')">1</button>
+              <button class="kp-btn" onclick="kpInput('2')">2</button>
+              <button class="kp-btn" onclick="kpInput('3')">3</button>
+              <button class="kp-btn" onclick="kpInput('4')">4</button>
+              <button class="kp-btn" onclick="kpInput('5')">5</button>
+              <button class="kp-btn" onclick="kpInput('6')">6</button>
+              <button class="kp-btn" onclick="kpInput('7')">7</button>
+              <button class="kp-btn" onclick="kpInput('8')">8</button>
+              <button class="kp-btn" onclick="kpInput('9')">9</button>
+              <button class="kp-btn zero" onclick="kpInput('0')">0</button>
+              <button class="kp-btn del" onclick="kpDel()">⌫</button>
+            </div>
+            <button class="kp-submit" onclick="kpSubmit()">✓ 채점하기</button>
+          </div>
+        </div>
+
+        <div class="feedback" id="feedback"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 이력 -->
+  <div class="history-wrap">
+    <div class="history-hd">ANSWER HISTORY</div>
+    <div class="history-list" id="history-list">
+      <div style="text-align:center;color:var(--ink-light);font-size:11px;padding:10px;font-family:'DM Mono',monospace;">문제를 풀면 이력이 표시됩니다</div>
+    </div>
+  </div>
+</main>
+
+<script>
+// ─── 상태 ───────────────────────────────────────
+let curType = 'add-h';
+let curProb = null;
+let probCnt = 0;
+let sc = {c:0, w:0, s:0};
+let answered = false;
+let isListening = false;
+let recog = null;
+let voiceOK = false;
+let kpVal = '';
+let inputMode = 'voice'; // 'voice' | 'keypad'
+
+const TYPE_CFG = {
+  'add-h':{label:'가로 덧셈', color:'#e8401c', grad:'linear-gradient(90deg,#e8401c,#f5a623)'},
+  'sub-h':{label:'가로 뺄셈', color:'#1a7fd4', grad:'linear-gradient(90deg,#1a7fd4,#7ab8eb)'},
+  'add-v':{label:'세로 덧셈', color:'#1aad6e', grad:'linear-gradient(90deg,#1aad6e,#76d4a8)'},
+  'sub-v':{label:'세로 뺄셈', color:'#9b59b6', grad:'linear-gradient(90deg,#9b59b6,#c39bd3)'},
+  'gugu' :{label:'구구단',    color:'#f5a623', grad:'linear-gradient(90deg,#f5a623,#f8d070)'},
+  'mul-v':{label:'세로 곱셈', color:'#e8401c', grad:'linear-gradient(90deg,#e8401c,#9b59b6)'},
+  'div-h':{label:'가로 나눗셈',color:'#1aad6e',grad:'linear-gradient(90deg,#1aad6e,#1a7fd4)'},
+  'div-v':{label:'세로 나눗셈',color:'#1a7fd4',grad:'linear-gradient(90deg,#1a7fd4,#1aad6e)'},
+};
+
+// ─── 음성 인식 초기화 ────────────────────────────
+// ★ 핵심 변경: continuous=true → 마이크를 한 번만 켜고 계속 유지
+// 문제가 바뀌어도 권한 재요청 없이 계속 듣는 상태 유지
+function initSpeech(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){
+    voiceOK = false;
+    document.getElementById('no-voice-banner').style.display = 'block';
+    document.getElementById('mic-btn').style.opacity = '0.35';
+    document.getElementById('mic-btn').style.pointerEvents = 'none';
+    setVoiceBox('error','⚠️ 음성 불가 — 키패드 탭을 눌러 입력하세요');
+    switchInputTab('keypad');
+    return;
+  }
+  voiceOK = true;
+  recog = new SR();
+  recog.lang = 'ko-KR';
+  recog.continuous = true;      // ★ 핵심: 계속 듣기 모드
+  recog.interimResults = true;
+  recog.maxAlternatives = 5;
+
+  recog.onstart = function(){
+    isListening = true;
+    setMicUI(true);
+    setVoiceBox('listening','🎤 듣고 있어요... 답을 말하세요!');
+  };
+
+  recog.onresult = function(e){
+    // continuous=true 모드에서는 resultIndex부터 처리
+    let interim = '', final = '';
+    for(let i = e.resultIndex; i < e.results.length; i++){
+      const t = e.results[i][0].transcript;
+      if(e.results[i].isFinal) final += t;
+      else interim += t;
+    }
+
+    if(interim) setVoiceBox('interim', '💬 ' + interim + ' ...');
+
+    if(final && !answered){
+      const clean = final.trim();
+      const num = parseNum(clean);
+      console.log('[음성]', clean, '→', num);
+      if(num !== null){
+        setVoiceBox('interim', '"' + clean + '" → ' + num);
+        setTimeout(()=>{ if(!answered) judge(num, clean); }, 200);
+      } else {
+        // 숫자 인식 실패 → 계속 듣기 유지 (중지하지 않음)
+        setVoiceBox('listening', '⚠️ "' + clean + '" — 숫자로 다시 말해주세요');
+        showToast('예: "십오", "15", "삼십육"');
+      }
+    }
+  };
+
+  recog.onerror = function(e){
+    console.warn('[음성오류]', e.error);
+    // no-speech는 조용한 상태일 뿐 → continuous 모드에서 자동 재개됨
+    if(e.error === 'no-speech') return;
+    // 그 외 오류만 실제 중단
+    isListening = false;
+    setMicUI(false);
+    const msg = {
+      'not-allowed':'마이크 권한을 허용해 주세요.',
+      'audio-capture':'마이크를 찾을 수 없어요.',
+      'network':'네트워크 오류가 발생했어요.',
+    }[e.error] || ('오류: ' + e.error);
+    setVoiceBox('error', '❌ ' + msg);
+    showToast(msg);
+  };
+
+  // ★ 핵심: onend에서 자동 재시작
+  // continuous=true여도 브라우저가 간혹 종료시킴 → 즉시 재시작
+  recog.onend = function(){
+    if(isListening){
+      // 사용자가 직접 끄지 않았으면 자동 재시작 (권한 재요청 없음)
+      try{ recog.start(); }catch(e){ console.log('재시작 실패:', e); }
+    } else {
+      setMicUI(false);
+      setVoiceBox('ready','🎤 버튼을 눌러 음성 입력 시작');
+    }
+  };
+}
+
+// 마이크 ON/OFF 토글
+function toggleMic(){
+  if(!voiceOK){ showToast('크롬 브라우저에서 열어주세요!'); return; }
+  if(isListening){
+    // 사용자가 직접 끔
+    isListening = false;
+    try{ recog.stop(); }catch(e){}
+    setMicUI(false);
+    setVoiceBox('ready','🎤 버튼을 눌러 음성 입력 시작');
+    showToast('마이크 꺼짐 🔇');
+  } else {
+    // 마이크 켬 → 이후 문제가 바뀌어도 계속 유지
+    isListening = true;
+    try{ recog.start(); }
+    catch(e){
+      setTimeout(()=>{ try{ recog.start(); }catch(e2){ console.error(e2); } }, 300);
+    }
+    showToast('마이크 켜짐 🎤 — 이제 계속 말하세요!');
+  }
+}
+
+// 마이크 버튼 UI만 업데이트 (isListening 상태는 건드리지 않음)
+function setMicUI(on){
+  const btn = document.getElementById('mic-btn');
+  const lbl = document.getElementById('mic-lbl');
+  if(on){
+    btn.classList.add('on');
+    btn.textContent = '⏹';
+    lbl.textContent = '마이크 ON — 계속 말하세요 (누르면 끔)';
+  } else {
+    btn.classList.remove('on');
+    btn.textContent = '🎤';
+    lbl.textContent = '탭하여 음성 입력 시작';
+  }
+}
+
+function setVoiceBox(cls, txt){
+  const el = document.getElementById('voice-box');
+  el.className = 'voice-box ' + (cls || 'ready');
+  el.textContent = txt;
+}
+
+// ─── 한국어 숫자 파싱 ────────────────────────────
+function parseNum(text){
+  const t = text.replace(/\s/g,'').replace(/[,\.]/g,'');
+  // 순수 숫자
+  if(/^\d+$/.test(t)) return parseInt(t);
+  // 숫자 추출
+  const m = t.match(/\d+/g);
+  if(m) return parseInt(m.join(''));
+  // 한국어 숫자 매핑
+  const M = {
+    '영':0,'일':1,'이':2,'삼':3,'사':4,'오':5,'육':6,'칠':7,'팔':8,'구':9,
+    '하나':1,'둘':2,'셋':3,'넷':4,'다섯':5,'여섯':6,'일곱':7,'여덟':8,'아홉':9,
+    '열':10,'스물':20,'서른':30,'마흔':40,'쉰':50,'예순':60,'일흔':70,'여든':80,'아흔':90,
+    '열하나':11,'열둘':12,'열셋':13,'열넷':14,'열다섯':15,
+    '열여섯':16,'열일곱':17,'열여덟':18,'열아홉':19,
+    '스물하나':21,'스물둘':22,'스물셋':23,'스물넷':24,'스물다섯':25,
+    '스물여섯':26,'스물일곱':27,'스물여덟':28,'스물아홉':29,
+    '서른하나':31,'서른둘':32,'서른셋':33,'서른넷':34,'서른다섯':35,
+    '마흔하나':41,'마흔둘':42,'마흔셋':43,'마흔넷':44,'마흔다섯':45,
+  };
+  if(M[t] !== undefined) return M[t];
+  // 한자식 (이십오 = 25)
+  let res = 0, tmp = t;
+  if(tmp.includes('백')){
+    const i=tmp.indexOf('백');
+    res += (i>0 ? (M[tmp.slice(0,i)]||1) : 1) * 100;
+    tmp = tmp.slice(i+1);
+  }
+  if(tmp.includes('십')){
+    const i=tmp.indexOf('십');
+    res += (i>0 ? (M[tmp.slice(0,i)]||1) : 1) * 10;
+    tmp = tmp.slice(i+1);
+  }
+  if(tmp) res += (M[tmp]||(/^\d+$/.test(tmp)?parseInt(tmp):0));
+  return res > 0 ? res : null;
+}
+
+// ─── 키패드 ──────────────────────────────────────
+function kpInput(d){
+  if(answered) return;
+  if(kpVal.length >= 4) return;
+  kpVal += d;
+  const el = document.getElementById('kp-display');
+  el.textContent = kpVal;
+  el.className = 'keypad-display has-val';
+}
+function kpDel(){
+  kpVal = kpVal.slice(0,-1);
+  const el = document.getElementById('kp-display');
+  el.textContent = kpVal || '?';
+  el.className = 'keypad-display' + (kpVal ? ' has-val' : '');
+}
+function kpSubmit(){
+  if(!kpVal){ showToast('숫자를 입력하세요!'); return; }
+  if(answered){ showToast('이미 채점됐습니다!'); return; }
+  judge(parseInt(kpVal), kpVal);
+  kpVal = '';
+  document.getElementById('kp-display').textContent = '?';
+  document.getElementById('kp-display').className = 'keypad-display';
+}
+
+// ─── 입력 탭 전환 ────────────────────────────────
+function switchInputTab(mode){
+  inputMode = mode;
+  document.getElementById('tab-voice').classList.toggle('on', mode==='voice');
+  document.getElementById('tab-keypad').classList.toggle('on', mode==='keypad');
+  document.getElementById('panel-voice').style.display  = mode==='voice'  ? 'flex' : 'none';
+  document.getElementById('panel-keypad').style.display = mode==='keypad' ? 'flex' : 'none';
+}
+
+// ─── 채점 ────────────────────────────────────────
+function judge(userAns, displayTxt){
+  if(answered) return;
+  answered = true;
+  // ★ 마이크는 끄지 않음 → 새 문제에서도 권한 재요청 없이 바로 사용
+
+  const ok = (userAns === curProb.ans);
+  const blank = document.getElementById('eq-blank');
+  if(blank){ blank.textContent = curProb.ans; blank.classList.add(ok?'correct':'wrong'); }
+
+  // 음성 박스 업데이트
+  if(inputMode === 'voice'){
+    setVoiceBox(ok?'correct':'wrong',
+      ok ? `✅ "${displayTxt}" — 정답!` : `❌ "${displayTxt}" — 정답은 ${curProb.ans}`);
+  }
+
+  // 피드백
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback';
+  if(ok){
+    sc.c++; sc.s++;
+    const msgs=['✅ 정답! 잘했어요!','🎉 맞아요!','⭐ 훌륭해요!','🌟 완벽!','👏 정확해요!'];
+    fb.textContent = sc.s >= 3 ? `🔥 ${sc.s}연속 정답! 대단해요!` : msgs[Math.floor(Math.random()*msgs.length)];
+    fb.classList.add(sc.s >= 5 ? 'perfect' : 'correct');
+    if(sc.s >= 3) showToast(`🔥 ${sc.s}연속 정답!`);
+  } else {
+    sc.w++; sc.s=0;
+    fb.textContent = `❌ 오답! 정답은 ${curProb.ans} 입니다.`;
+    fb.classList.add('wrong');
+  }
+
+  addHistory(ok);
+  updateScore();
+  setTimeout(()=>newProblem(false), 2500);
+}
+
+// ─── 이력 ────────────────────────────────────────
+function addHistory(ok){
+  const list = document.getElementById('history-list');
+  if(list.innerHTML.includes('문제를 풀면')) list.innerHTML='';
+  const opStr = {'+':'+','−':'−','×':'×','÷':'÷'}[curProb.op]||'÷';
+  const eq = curProb.t==='dv' ? `${curProb.n1}÷${curProb.n2}` : `${curProb.n1}${opStr}${curProb.n2}`;
+  const item = document.createElement('div');
+  item.className = 'h-item';
+  item.innerHTML = `<span class="h-eq">${eq} = ${curProb.ans}</span><span class="h-my ${ok?'c':'w'}">${ok?'✅':'❌'}</span>`;
+  list.insertBefore(item, list.firstChild);
+  if(list.children.length > 20) list.removeChild(list.lastChild);
+}
+
+// ─── 스코어 ──────────────────────────────────────
+function updateScore(){
+  const total = sc.c + sc.w;
+  const pct = total > 0 ? Math.round(sc.c/total*100) : 0;
+  document.getElementById('sc-c').textContent  = sc.c;
+  document.getElementById('sc-w').textContent  = sc.w;
+  document.getElementById('sc-s').textContent  = sc.s;
+  document.getElementById('sc-pct').textContent = pct+'%';
+  document.getElementById('sc-bar').style.width = pct+'%';
+  document.getElementById('h-score').textContent = sc.c+' / '+total;
+}
+
+// ─── 문제 생성 ────────────────────────────────────
+function rnd(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+function gen(type){
+  let n1,n2,ans;
+  switch(type){
+    case 'add-h': n1=rnd(1,50);  n2=rnd(1,50);  ans=n1+n2; return {t:'h',n1,n2,op:'+',ans};
+    case 'sub-h': n1=rnd(10,99); n2=rnd(1,n1);  ans=n1-n2; return {t:'h',n1,n2,op:'−',ans};
+    case 'add-v': n1=rnd(10,99); n2=rnd(10,99); ans=n1+n2; return {t:'v',n1,n2,op:'+',ans};
+    case 'sub-v': n1=rnd(20,99); n2=rnd(10,n1); ans=n1-n2; return {t:'v',n1,n2,op:'−',ans};
+    case 'gugu':  n1=rnd(2,9);   n2=rnd(1,9);   ans=n1*n2; return {t:'g',n1,n2,op:'×',ans};
+    case 'mul-v': n1=rnd(11,99); n2=rnd(2,9);   ans=n1*n2; return {t:'v',n1,n2,op:'×',ans};
+    case 'div-h': n2=rnd(2,9); ans=rnd(2,9); n1=n2*ans;    return {t:'h',n1,n2,op:'÷',ans};
+    case 'div-v': n2=rnd(2,9); ans=rnd(2,9); n1=n2*ans;    return {t:'dv',n1,n2,ans};
+  }
+}
+
+// ─── 수식 렌더링 ─────────────────────────────────
+function renderEq(p){
+  const w = document.getElementById('eq-wrap');
+  if(p.t==='h'){
+    w.innerHTML=`<div class="eq-h"><span>${p.n1}</span><span class="eq-op">${p.op}</span><span>${p.n2}</span><span class="eq-eq">=</span><span class="eq-blank" id="eq-blank">&nbsp;&nbsp;&nbsp;</span></div>`;
+  } else if(p.t==='v'){
+    w.innerHTML=`<div class="eq-v"><div>${p.n1}</div><div><span class="eq-v-op">${p.op}</span> ${p.n2}</div><div class="eq-v-line"></div><div><span class="eq-blank" id="eq-blank" style="font-size:40px;">&nbsp;&nbsp;&nbsp;&nbsp;</span></div></div>`;
+  } else if(p.t==='g'){
+    w.innerHTML=`<div class="eq-gugu"><span>${p.n1}</span><span class="eq-op">×</span><span>${p.n2}</span><span class="eq-eq">=</span><span class="eq-blank" id="eq-blank">&nbsp;&nbsp;&nbsp;</span></div>`;
+  } else if(p.t==='dv'){
+    w.innerHTML=`<div class="eq-dv"><span class="div-divisor">${p.n2}</span><div class="div-bracket"><div class="div-q"><span class="eq-blank" id="eq-blank" style="font-size:32px;min-width:48px;">&nbsp;&nbsp;</span></div><div>${p.n1}</div></div></div>`;
+  }
+}
+
+// ─── 새 문제 ─────────────────────────────────────
+function newProblem(reset=true){
+  probCnt++; answered=false; kpVal='';
+  curProb = gen(curType);
+  renderEq(curProb);
+  const cfg = TYPE_CFG[curType];
+  document.getElementById('prob-topbar').style.background = cfg.grad;
+  document.getElementById('prob-badge').textContent  = cfg.label;
+  document.getElementById('prob-badge').style.background = cfg.color+'22';
+  document.getElementById('prob-badge').style.color = cfg.color;
+  document.getElementById('prob-num').textContent   = '#'+probCnt;
+  document.getElementById('feedback').className     = 'feedback';
+  document.getElementById('kp-display').textContent = '?';
+  document.getElementById('kp-display').className   = 'keypad-display';
+  // ★ 마이크가 켜져 있으면 "듣는 중" 상태로 바로 복원
+  if(voiceOK && isListening){
+    setVoiceBox('listening','🎤 듣고 있어요... 답을 말하세요!');
+    setMicUI(true);
+  } else {
+    setVoiceBox('ready','🎤 버튼을 눌러 답을 말하세요');
+  }
+  // 카드 재애니메이션
+  const c=document.getElementById('prob-card');
+  c.style.animation='none'; void c.offsetWidth; c.style.animation='slideIn 0.3s ease';
+}
+
+function setType(el, type){
+  curType=type;
+  document.querySelectorAll('.type-tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  newProblem();
+  showToast(TYPE_CFG[type].label+' 문제!');
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ─── 초기화 ──────────────────────────────────────
+initSpeech();
+switchInputTab('voice');
+newProblem();
+</script>
+</body>
+</html>
