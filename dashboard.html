@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>구몬수학 교사 대시보드</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0908; --surface:#111009; --card:#171512; --border:#222018;
+  --text:#d8d0c0; --muted:#6a6258; --accent:#f5a623;
+  --green:#1aad6e; --red:#e8401c; --blue:#1a7fd4; --purple:#9b59b6;
+  --font:'Noto Sans KR',sans-serif; --mono:'DM Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+
+/* ── 헤더 ── */
+.header{height:56px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px;flex-shrink:0;position:sticky;top:0;z-index:100;}
+.header-logo{width:36px;height:36px;border-radius:10px;background:var(--red);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;color:white;}
+.header-title{font-size:16px;font-weight:700;color:var(--text);}
+.header-sub{font-size:11px;color:var(--muted);font-family:var(--mono);}
+.header-spacer{flex:1;}
+.header-tabs{display:flex;gap:4px;}
+.htab{padding:6px 14px;border-radius:8px;border:none;background:transparent;font-family:var(--font);font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;transition:all 0.15s;}
+.htab:hover{background:rgba(255,255,255,0.05);color:var(--text);}
+.htab.on{background:rgba(245,166,35,0.12);color:var(--accent);}
+.back-btn{padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--muted);font-size:12px;font-family:var(--font);cursor:pointer;transition:all 0.15s;}
+.back-btn:hover{background:var(--card);color:var(--text);}
+
+/* ── 레이아웃 ── */
+.main{flex:1;display:flex;overflow:hidden;}
+.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:16px 12px;gap:4px;overflow-y:auto;flex-shrink:0;}
+.content{flex:1;overflow-y:auto;padding:24px;}
+
+/* ── 사이드바 ── */
+.sb-section{font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--muted);padding:8px 10px 4px;text-transform:uppercase;}
+.sb-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--muted);transition:all 0.15s;border:none;background:none;width:100%;text-align:left;font-family:var(--font);}
+.sb-item:hover{background:rgba(255,255,255,0.04);color:var(--text);}
+.sb-item.on{background:rgba(245,166,35,0.1);color:var(--accent);}
+.sb-item-icon{font-size:15px;width:20px;text-align:center;}
+.sb-badge{margin-left:auto;background:var(--red);color:white;border-radius:10px;padding:1px 6px;font-size:10px;font-family:var(--mono);}
+
+/* ── 카드 ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px;}
+.card-title{font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;transition:all 0.2s;}
+.stat-card:hover{border-color:var(--accent);transform:translateY(-2px);}
+.stat-val{font-size:28px;font-weight:900;font-family:var(--mono);margin-bottom:4px;}
+.stat-lbl{font-size:11px;color:var(--muted);}
+.stat-change{font-size:10px;font-family:var(--mono);margin-top:6px;}
+.stat-change.up{color:var(--green);}
+.stat-change.down{color:var(--red);}
+
+/* ── 학생 테이블 ── */
+.student-table{width:100%;border-collapse:collapse;}
+.student-table th{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);}
+.student-table td{padding:12px 12px;border-bottom:1px solid rgba(255,255,255,0.03);font-size:13px;vertical-align:middle;}
+.student-table tr:hover td{background:rgba(255,255,255,0.02);}
+.s-avatar{width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:white;margin-right:8px;vertical-align:middle;}
+.s-name{font-weight:700;color:var(--text);}
+.s-sub{font-size:11px;color:var(--muted);font-family:var(--mono);}
+.prog-bar-wrap{width:100px;}
+.prog-bar{height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;}
+.prog-bar-fill{height:100%;border-radius:3px;transition:width 0.5s;}
+.prog-pct{font-size:10px;font-family:var(--mono);color:var(--muted);margin-top:3px;}
+.badge-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:10px;font-family:var(--mono);font-weight:700;}
+.badge-pill.green{background:rgba(26,173,110,0.12);color:var(--green);}
+.badge-pill.red{background:rgba(232,64,28,0.12);color:var(--red);}
+.badge-pill.blue{background:rgba(26,127,212,0.12);color:var(--blue);}
+.badge-pill.yellow{background:rgba(245,166,35,0.12);color:var(--accent);}
+.action-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:none;font-size:11px;color:var(--muted);cursor:pointer;font-family:var(--font);transition:all 0.15s;}
+.action-btn:hover{background:var(--surface);color:var(--text);}
+
+/* ── 활동 피드 ── */
+.feed-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03);}
+.feed-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
+.feed-content{flex:1;}
+.feed-text{font-size:12px;color:var(--text);}
+.feed-time{font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:2px;}
+.feed-badge{font-size:11px;padding:2px 8px;border-radius:20px;margin-left:6px;}
+
+/* ── 차트 영역 ── */
+.chart-wrap{background:rgba(255,255,255,0.02);border-radius:10px;padding:16px;margin-bottom:12px;}
+.chart-title{font-size:11px;color:var(--muted);margin-bottom:12px;font-family:var(--mono);}
+.bar-chart{display:flex;align-items:flex-end;gap:8px;height:80px;}
+.bar-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;}
+.bar{width:100%;border-radius:4px 4px 0 0;transition:height 0.5s;min-height:2px;}
+.bar-lbl{font-size:9px;color:var(--muted);font-family:var(--mono);}
+.bar-val{font-size:9px;color:var(--text);font-family:var(--mono);}
+
+/* ── 뷰 패널 ── */
+.view-panel{display:none;}
+.view-panel.active{display:block;}
+
+/* ── 학부모 리포트 ── */
+.report-card{background:linear-gradient(135deg,var(--card),rgba(26,127,212,0.05));border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;}
+.report-header{display:flex;align-items:center;gap:16px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);}
+.report-avatar-big{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+.report-student-name{font-size:20px;font-weight:900;}
+.report-period{font-size:12px;color:var(--muted);font-family:var(--mono);margin-top:4px;}
+.report-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+.r-stat{background:rgba(255,255,255,0.03);border-radius:10px;padding:14px;text-align:center;}
+.r-stat-val{font-size:22px;font-weight:900;font-family:var(--mono);}
+.r-stat-lbl{font-size:10px;color:var(--muted);margin-top:4px;}
+.report-comment{background:rgba(26,127,212,0.06);border:1px solid rgba(26,127,212,0.15);border-radius:10px;padding:14px;font-size:13px;line-height:1.8;color:var(--text);}
+.report-comment .teacher-name{font-weight:700;color:var(--blue);font-size:12px;margin-bottom:6px;}
+.send-report-btn{width:100%;padding:12px;background:var(--blue);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;font-family:var(--font);cursor:pointer;transition:opacity 0.15s;margin-top:12px;}
+.send-report-btn:hover{opacity:0.85;}
+
+/* ── AI 분석 ── */
+.ai-panel{background:linear-gradient(135deg,rgba(155,89,182,0.08),rgba(26,127,212,0.05));border:1px solid rgba(155,89,182,0.2);border-radius:14px;padding:20px;margin-bottom:16px;}
+.ai-panel-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.ai-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--blue));display:flex;align-items:center;justify-content:center;font-size:18px;}
+.ai-title{font-size:14px;font-weight:700;color:var(--text);}
+.ai-sub{font-size:11px;color:var(--muted);font-family:var(--mono);}
+.ai-result{background:rgba(0,0,0,0.3);border-radius:10px;padding:16px;font-size:13px;line-height:1.9;color:var(--text);min-height:80px;position:relative;}
+.ai-result.loading::after{content:'분석 중...';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--purple);font-family:var(--mono);font-size:12px;background:rgba(0,0,0,0.5);border-radius:10px;}
+.ai-tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-family:var(--mono);margin:2px;background:rgba(155,89,182,0.12);color:var(--purple);}
+.ai-analyze-btn{padding:10px 20px;background:linear-gradient(135deg,var(--purple),var(--blue));color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;transition:opacity 0.2s;margin-top:12px;}
+.ai-analyze-btn:hover{opacity:0.85;}
+.ai-analyze-btn:disabled{opacity:0.4;cursor:not-allowed;}
+.wrong-analysis-list{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+.wa-item{background:rgba(232,64,28,0.05);border:1px solid rgba(232,64,28,0.12);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:12px;}
+.wa-q{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text);flex:1;}
+.wa-info{font-size:11px;color:var(--muted);}
+.wa-count{font-family:var(--mono);font-size:12px;color:var(--red);font-weight:700;}
+
+/* ── 섹션 토글 ── */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.section-title{font-size:16px;font-weight:700;}
+.section-sub{font-size:12px;color:var(--muted);font-family:var(--mono);margin-top:2px;}
+
+/* ── 반응형 ── */
+@media(max-width:768px){
+  .sidebar{display:none;}
+  .stat-grid{grid-template-columns:repeat(2,1fr);}
+  .report-stats{grid-template-columns:repeat(2,1fr);}
+}
+
+/* ── 애니메이션 ── */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.view-panel.active{animation:fadeIn 0.2s ease;}
+</style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<div class="header">
+  <div class="header-logo">수학</div>
+  <div>
+    <div class="header-title">구몬수학 교사 대시보드</div>
+  </div>
+  <div class="header-spacer"></div>
+  <div class="header-tabs">
+    <button class="htab on" onclick="showView('dashboard')">📊 대시보드</button>
+    <button class="htab" onclick="showView('report')">📱 학부모 리포트</button>
+    <button class="htab" onclick="showView('ai')">🤖 AI 분석</button>
+  </div>
+  <button class="back-btn" onclick="window.close()">← 뷰어로 돌아가기</button>
+</div>
+
+<div class="main">
+  <!-- 사이드바 -->
+  <div class="sidebar">
+    <div class="sb-section">학생 목록</div>
+    <div id="sb-student-list"></div>
+    <div class="sb-section" style="margin-top:16px;">빠른 이동</div>
+    <button class="sb-item on" onclick="showView('dashboard')"><span class="sb-item-icon">📊</span>전체 현황</button>
+    <button class="sb-item" onclick="showView('report')"><span class="sb-item-icon">📱</span>학부모 리포트</button>
+    <button class="sb-item" onclick="showView('ai')"><span class="sb-item-icon">🤖</span>AI 오답 분석</button>
+  </div>
+
+  <!-- 콘텐츠 -->
+  <div class="content">
+
+    <!-- ① 대시보드 뷰 -->
+    <div class="view-panel active" id="view-dashboard">
+      <div class="section-header">
+        <div>
+          <div class="section-title">학생 현황 대시보드</div>
+          <div class="section-sub" id="dash-date"></div>
+        </div>
+      </div>
+
+      <!-- 통계 카드 -->
+      <div class="stat-grid" id="stat-grid">
+        <div class="stat-card">
+          <div class="stat-val" id="stat-total" style="color:var(--accent);">-</div>
+          <div class="stat-lbl">등록 학생 수</div>
+          <div class="stat-change up" id="stat-today-active">오늘 학습: -명</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="stat-avg-progress" style="color:var(--green);">-</div>
+          <div class="stat-lbl">평균 진도율</div>
+          <div class="stat-change up">전체 기준</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="stat-total-done" style="color:var(--blue);">-</div>
+          <div class="stat-lbl">총 완료 페이지</div>
+          <div class="stat-change up">누적 합계</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="stat-wrong-total" style="color:var(--red);">-</div>
+          <div class="stat-lbl">누적 오답 수</div>
+          <div class="stat-change down">오답노트 기준</div>
+        </div>
+      </div>
+
+      <!-- 단계별 진도 차트 -->
+      <div class="card">
+        <div class="card-title">단계별 평균 진도</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+          <div class="chart-wrap">
+            <div class="chart-title">A단계</div>
+            <div class="bar-chart" id="chart-a"></div>
+          </div>
+          <div class="chart-wrap">
+            <div class="chart-title">B단계</div>
+            <div class="bar-chart" id="chart-b"></div>
+          </div>
+          <div class="chart-wrap">
+            <div class="chart-title">C단계</div>
+            <div class="bar-chart" id="chart-c"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 학생 목록 테이블 -->
+      <div class="card">
+        <div class="card-title">학생별 상세 현황</div>
+        <table class="student-table" id="student-table">
+          <thead>
+            <tr>
+              <th>학생</th>
+              <th>단계</th>
+              <th>진도</th>
+              <th>완료 페이지</th>
+              <th>오답 수</th>
+              <th>레벨</th>
+              <th>streak</th>
+              <th>상태</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="student-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- 최근 활동 피드 -->
+      <div class="card">
+        <div class="card-title">최근 학습 활동</div>
+        <div id="activity-feed"></div>
+      </div>
+    </div>
+
+    <!-- ② 학부모 리포트 뷰 -->
+    <div class="view-panel" id="view-report">
+      <div class="section-header">
+        <div>
+          <div class="section-title">학부모 리포트</div>
+          <div class="section-sub">학생별 학습 현황을 학부모에게 발송합니다</div>
+        </div>
+      </div>
+      <div id="report-list"></div>
+    </div>
+
+    <!-- ③ AI 오답 분석 뷰 -->
+    <div class="view-panel" id="view-ai">
+      <div class="section-header">
+        <div>
+          <div class="section-title">🤖 AI 오답 분석</div>
+          <div class="section-sub">Claude AI가 오답 패턴을 분석하고 맞춤 학습 방향을 제시합니다</div>
+        </div>
+      </div>
+
+      <!-- 학생 선택 -->
+      <div class="card">
+        <div class="card-title">분석할 학생 선택</div>
+        <div id="ai-student-selector" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;"></div>
+        <button class="ai-analyze-btn" id="ai-btn" onclick="runAIAnalysis()">🤖 AI 분석 시작</button>
+      </div>
+
+      <!-- 오답 목록 -->
+      <div class="card" id="ai-wrong-section" style="display:none;">
+        <div class="card-title">오답 목록 <span id="ai-wrong-count" style="color:var(--red);"></span></div>
+        <div class="wrong-analysis-list" id="ai-wrong-list"></div>
+      </div>
+
+      <!-- AI 분석 결과 -->
+      <div class="ai-panel" id="ai-result-panel" style="display:none;">
+        <div class="ai-panel-header">
+          <div class="ai-icon">🤖</div>
+          <div>
+            <div class="ai-title">AI 학습 분석 리포트</div>
+            <div class="ai-sub" id="ai-result-sub">Claude AI 분석 결과</div>
+          </div>
+        </div>
+        <div class="ai-result" id="ai-result-text">분석 결과가 여기에 표시됩니다.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── 데이터 로더 ──────────────────────────────────────────────
+const STAGE_TOTAL = {A:10, B:10, C:10};
+const AVATAR_COLORS=['#e8401c','#1a7fd4','#1aad6e','#f5a623','#9b59b6','#e91e8c','#00bcd4','#ff5722','#4caf50','#3f51b5'];
+
+function getStudents(){
+  try{const r=localStorage.getItem('kumon-students');return r?JSON.parse(r):[];}catch(e){return[];}
+}
+
+function getStudentDone(sid, stage){
+  let done=0;
+  for(let p=1;p<=STAGE_TOTAL[stage];p++){
+    if(localStorage.getItem(`kumon-done-${sid}-${stage}-${p}`)==='1') done++;
+  }
+  return done;
+}
+
+function getStudentWrong(sid){
+  try{const r=localStorage.getItem(`kumon-wrong-${sid}`);return r?JSON.parse(r):[];}catch(e){return[];}
+}
+
+function getGameData(sid){
+  try{const r=localStorage.getItem(`kumon-game-${sid}`);return r?JSON.parse(r):{points:0,xp:0,level:1,streak:0,badges:[],totalDone:0};}
+  catch(e){return{points:0,xp:0,level:1,streak:0,badges:[],totalDone:0};}
+}
+
+// ── 뷰 전환 ─────────────────────────────────────────────────
+let currentView = 'dashboard';
+let selectedAiStudent = null;
+
+function showView(v){
+  currentView = v;
+  document.querySelectorAll('.view-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.querySelectorAll('.htab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.htab').forEach(t=>{if(t.textContent.includes({'dashboard':'대시보드','report':'리포트','ai':'AI'}[v])) t.classList.add('on');});
+  document.querySelectorAll('.sb-item').forEach(t=>t.classList.remove('on'));
+  if(v==='dashboard') renderDashboard();
+  if(v==='report') renderReports();
+  if(v==='ai') renderAI();
+}
+
+// ── ① 대시보드 렌더 ─────────────────────────────────────────
+function renderDashboard(){
+  const students = getStudents();
+  const now = new Date();
+  document.getElementById('dash-date').textContent = now.toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
+
+  // 통계
+  let totalDone=0, totalWrong=0, progressSum=0;
+  students.forEach(s=>{
+    let done=0;
+    ['A','B','C'].forEach(st=>{ done+=getStudentDone(s.id,st); });
+    totalDone+=done;
+    totalWrong+=getStudentWrong(s.id).length;
+    const stageDone=getStudentDone(s.id,s.stage);
+    progressSum+=stageDone/STAGE_TOTAL[s.stage]*100;
+  });
+  const avgProgress = students.length ? Math.round(progressSum/students.length) : 0;
+  document.getElementById('stat-total').textContent = students.length;
+  document.getElementById('stat-avg-progress').textContent = avgProgress+'%';
+  document.getElementById('stat-total-done').textContent = totalDone;
+  document.getElementById('stat-wrong-total').textContent = totalWrong;
+
+  // 사이드바 학생 목록
+  const sbList = document.getElementById('sb-student-list');
+  sbList.innerHTML = students.map(s=>`
+    <button class="sb-item" onclick="scrollToStudent('${s.id}')">
+      <span class="sb-item-icon">${s.emoji}</span>
+      <span>${s.name}</span>
+      <span class="sb-badge" style="background:${s.color};">${s.stage}</span>
+    </button>
+  `).join('') || '<div style="font-size:12px;color:var(--muted);padding:8px 10px;">학생 없음</div>';
+
+  // 단계별 차트
+  ['A','B','C'].forEach(stage=>{
+    const chart=document.getElementById('chart-'+stage.toLowerCase());
+    const stageStudents=students.filter(s=>s.stage===stage);
+    if(!stageStudents.length){chart.innerHTML='<div style="font-size:11px;color:var(--muted);text-align:center;width:100%;">해당 학생 없음</div>';return;}
+    const maxH=70;
+    chart.innerHTML=stageStudents.map(s=>{
+      const done=getStudentDone(s.id,stage);
+      const pct=done/STAGE_TOTAL[stage]*100;
+      const h=Math.max(4,pct/100*maxH);
+      return `<div class="bar-col">
+        <div class="bar-val">${Math.round(pct)}%</div>
+        <div class="bar" style="height:${h}px;background:${s.color};"></div>
+        <div class="bar-lbl">${s.name}</div>
+      </div>`;
+    }).join('');
+  });
+
+  // 학생 테이블
+  const tbody = document.getElementById('student-tbody');
+  if(!students.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:32px;">등록된 학생이 없습니다</td></tr>';return;}
+  tbody.innerHTML = students.map(s=>{
+    const done=getStudentDone(s.id,s.stage);
+    const total=STAGE_TOTAL[s.stage];
+    const pct=Math.round(done/total*100);
+    const wrong=getStudentWrong(s.id).length;
+    const game=getGameData(s.id);
+    const streak=game.streak||0;
+    let status='blue', statusTxt='학습중';
+    if(pct>=80){status='green';statusTxt='우수';}
+    else if(wrong>=5){status='red';statusTxt='주의';}
+    return `<tr id="row-${s.id}">
+      <td><span class="s-avatar" style="background:${s.color};">${s.emoji}</span><span class="s-name">${s.name}</span></td>
+      <td><span class="badge-pill yellow">${s.stage}단계</span></td>
+      <td><div class="prog-bar-wrap"><div class="prog-bar"><div class="prog-bar-fill" style="width:${pct}%;background:${s.color};"></div></div><div class="prog-pct">${done}/${total} · ${pct}%</div></div></td>
+      <td style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text);">${done}페이지</td>
+      <td style="font-family:var(--mono);color:${wrong>0?'var(--red)':'var(--green)'};">${wrong}개</td>
+      <td style="font-family:var(--mono);color:var(--accent);">Lv.${game.level||1}</td>
+      <td style="font-family:var(--mono);color:${streak>=3?'var(--accent)':'var(--muted)'};">${streak>=1?'🔥':''} ${streak}일</td>
+      <td><span class="badge-pill ${status}">${statusTxt}</span></td>
+      <td>
+        <button class="action-btn" onclick="showView('report');setTimeout(()=>scrollToReport('${s.id}'),100)">리포트</button>
+        <button class="action-btn" onclick="showView('ai');selectAiStudent('${s.id}')" style="margin-left:4px;">AI분석</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // 활동 피드
+  const feed = document.getElementById('activity-feed');
+  const allActivities = [];
+  students.forEach(s=>{
+    const wrong=getStudentWrong(s.id);
+    const game=getGameData(s.id);
+    // 오답 기록
+    wrong.slice(0,3).forEach(w=>{
+      allActivities.push({time:w.date,student:s,type:'wrong',text:`${w.stage}단계 ${w.page}p — "${w.q}" 오답`,icon:'❌'});
+    });
+    // 배지
+    (game.badges||[]).slice(-2).forEach(bid=>{
+      const BADGES_DEF={first_done:'🌟',streak3:'🔥',streak7:'💫',points100:'⭐',points500:'🏆',done10:'📚',done30:'🎓',all_a:'🅰️'};
+      allActivities.push({time:'최근',student:s,type:'badge',text:`배지 "${bid}" 획득`,icon:BADGES_DEF[bid]||'🏅'});
+    });
+  });
+  if(!allActivities.length){
+    feed.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px;">학습 활동 기록이 없습니다<br>학생들이 학습을 시작하면 여기에 표시됩니다</div>';
+    return;
+  }
+  feed.innerHTML=allActivities.slice(0,10).map(a=>`
+    <div class="feed-item">
+      <div class="feed-avatar" style="background:${a.student.color};">${a.student.emoji}</div>
+      <div class="feed-content">
+        <div class="feed-text"><strong>${a.student.name}</strong> ${a.text} <span class="feed-badge">${a.icon}</span></div>
+        <div class="feed-time">${a.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function scrollToStudent(id){
+  const row=document.getElementById('row-'+id);
+  if(row) row.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+// ── ② 학부모 리포트 렌더 ─────────────────────────────────────
+function renderReports(){
+  const students=getStudents();
+  const container=document.getElementById('report-list');
+  if(!students.length){
+    container.innerHTML='<div style="text-align:center;padding:48px;color:var(--muted);">등록된 학생이 없습니다</div>';
+    return;
+  }
+  const today=new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'});
+  container.innerHTML=students.map(s=>{
+    const done=getStudentDone(s.id,s.stage);
+    const total=STAGE_TOTAL[s.stage];
+    const pct=Math.round(done/total*100);
+    const wrong=getStudentWrong(s.id).length;
+    const game=getGameData(s.id);
+    const streak=game.streak||0;
+    let comment='';
+    if(pct>=80) comment=`${s.name} 학생은 ${s.stage}단계를 ${pct}% 완료하여 매우 우수한 학습 진도를 보이고 있습니다. 꾸준한 학습 습관이 좋은 결과로 이어지고 있으니 계속해서 격려해 주세요!`;
+    else if(pct>=50) comment=`${s.name} 학생은 ${s.stage}단계를 ${pct}% 완료했습니다. 꾸준히 학습하고 있으며, 조금 더 집중하면 더 빠른 진도를 보일 수 있을 것 같습니다.`;
+    else comment=`${s.name} 학생의 ${s.stage}단계 진도는 현재 ${pct}%입니다. 집에서도 매일 조금씩 복습을 격려해 주시면 빠른 향상이 기대됩니다.`;
+    if(wrong>0) comment+=` 오답이 ${wrong}개 있으니 해당 문제를 함께 다시 풀어보시기 바랍니다.`;
+    if(streak>=3) comment+=` 최근 ${streak}일 연속으로 학습하는 훌륭한 습관을 보이고 있습니다! 🔥`;
+    return `
+    <div class="report-card" id="report-${s.id}">
+      <div class="report-header">
+        <div class="report-avatar-big" style="background:${s.color};">${s.emoji}</div>
+        <div>
+          <div class="report-student-name">${s.name} 학생</div>
+          <div class="report-period">📅 ${today} 기준 주간 리포트</div>
+        </div>
+      </div>
+      <div class="report-stats">
+        <div class="r-stat">
+          <div class="r-stat-val" style="color:${s.color};">${pct}%</div>
+          <div class="r-stat-lbl">단계 진도율</div>
+        </div>
+        <div class="r-stat">
+          <div class="r-stat-val" style="color:var(--green);">${done}장</div>
+          <div class="r-stat-lbl">완료 페이지</div>
+        </div>
+        <div class="r-stat">
+          <div class="r-stat-val" style="color:var(--accent);">Lv.${game.level||1}</div>
+          <div class="r-stat-lbl">학습 레벨</div>
+        </div>
+      </div>
+      <div class="report-comment">
+        <div class="teacher-name">👩‍🏫 담당 교사 코멘트</div>
+        ${comment}
+      </div>
+      <button class="send-report-btn" onclick="sendReport('${s.id}','${s.name}')">
+        📤 ${s.name} 학부모에게 리포트 발송 (카카오톡/문자)
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function scrollToReport(id){
+  const el=document.getElementById('report-'+id);
+  if(el) el.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function sendReport(sid, name){
+  // 실제 구현 시 카카오 API 또는 문자 API 연동
+  const btn=event.target;
+  btn.textContent='✅ 발송 완료!';
+  btn.style.background='var(--green)';
+  setTimeout(()=>{btn.textContent=`📤 ${name} 학부모에게 리포트 발송 (카카오톡/문자)`;btn.style.background='';},3000);
+  alert(`📱 ${name} 학생의 학부모 리포트 발송!\n\n실제 서비스에서는 카카오 알림톡 또는\nSMS로 자동 발송됩니다.\n\n(현재는 데모 버전입니다)`);
+}
+
+// ── ③ AI 분석 렌더 ──────────────────────────────────────────
+function renderAI(){
+  const students=getStudents();
+  const selector=document.getElementById('ai-student-selector');
+  selector.innerHTML=students.map(s=>`
+    <button class="action-btn" id="ai-sel-${s.id}" onclick="selectAiStudent('${s.id}')" style="padding:8px 14px;font-size:13px;">
+      <span style="margin-right:6px;">${s.emoji}</span>${s.name}
+    </button>
+  `).join('') || '<div style="color:var(--muted);font-size:13px;">등록된 학생이 없습니다</div>';
+
+  if(selectedAiStudent) selectAiStudent(selectedAiStudent);
+}
+
+function selectAiStudent(sid){
+  selectedAiStudent=sid;
+  const students=getStudents();
+  const s=students.find(x=>x.id===sid);
+  if(!s) return;
+
+  // 선택 버튼 하이라이트
+  document.querySelectorAll('[id^="ai-sel-"]').forEach(b=>b.style.borderColor='');
+  const selBtn=document.getElementById('ai-sel-'+sid);
+  if(selBtn) selBtn.style.borderColor=s.color;
+
+  // 오답 목록 표시
+  const wrong=getStudentWrong(sid);
+  const ws=document.getElementById('ai-wrong-section');
+  const wl=document.getElementById('ai-wrong-list');
+  document.getElementById('ai-wrong-count').textContent=`(${wrong.length}개)`;
+  if(wrong.length){
+    ws.style.display='';
+    wl.innerHTML=wrong.map(w=>`
+      <div class="wa-item">
+        <div class="wa-q">${w.q}</div>
+        <div class="wa-info">${w.stage}단계 ${w.page}p · ${w.date}</div>
+        <div class="wa-count">내 답: ${w.mine||'?'}</div>
+        <div style="font-size:12px;color:var(--green);font-family:var(--mono);font-weight:700;">정답: ${w.correct}</div>
+      </div>
+    `).join('');
+  } else {
+    ws.style.display='';
+    wl.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">오답 기록이 없습니다 🎉</div>';
+  }
+}
+
+async function runAIAnalysis(){
+  if(!selectedAiStudent){alert('분석할 학생을 선택해 주세요.');return;}
+  const students=getStudents();
+  const s=students.find(x=>x.id===selectedAiStudent);
+  if(!s) return;
+
+  const wrong=getStudentWrong(selectedAiStudent);
+  const done=getStudentDone(selectedAiStudent,s.stage);
+  const game=getGameData(selectedAiStudent);
+  const btn=document.getElementById('ai-btn');
+  const resultPanel=document.getElementById('ai-result-panel');
+  const resultText=document.getElementById('ai-result-text');
+
+  btn.disabled=true;btn.textContent='🤖 분석 중...';
+  resultPanel.style.display='';
+  resultText.className='ai-result loading';
+  document.getElementById('ai-result-sub').textContent=`${s.name} 학생 분석 중...`;
+
+  const prompt = `당신은 초등학생 수학 전문 교사입니다. 다음 학생의 학습 데이터를 분석하고 맞춤형 학습 가이드를 작성해 주세요.
+
+학생 정보:
+- 이름: ${s.name}
+- 현재 단계: ${s.stage}단계
+- 완료 페이지: ${done}/${10}페이지 (${Math.round(done/10*100)}%)
+- 학습 레벨: Lv.${game.level||1}
+- 연속 학습일: ${game.streak||0}일
+- 총 포인트: ${game.points||0}pt
+
+오답 목록 (${wrong.length}개):
+${wrong.length ? wrong.map(w=>`- 문제: "${w.q}" | 내 답: ${w.mine||'?'} | 정답: ${w.correct}`).join('\n') : '오답 없음 (매우 우수!)'}
+
+다음 내용을 포함해서 분석해 주세요 (한국어로, 친근하고 격려하는 톤으로):
+1. **현재 학습 수준 평가** (2-3줄)
+2. **오답 패턴 분석** (어떤 유형의 문제가 어려운지)
+3. **맞춤 학습 방향** (구체적인 3가지 제안)
+4. **학부모께 드리는 한마디**
+
+간결하고 실용적으로 작성해 주세요.`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{role: 'user', content: prompt}]
+      })
+    });
+    const data = await response.json();
+    const text = data.content?.[0]?.text || '분석 결과를 가져올 수 없습니다.';
+    resultText.className='ai-result';
+    // 마크다운 간단 렌더
+    resultText.innerHTML = text
+      .replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--accent);">$1</strong>')
+      .replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>')
+      .replace(/(\d+\. )/g,'<br><span style="color:var(--purple);font-weight:700;">$1</span>');
+  } catch(e) {
+    resultText.className='ai-result';
+    resultText.innerHTML=`<span style="color:var(--red);">AI 연결 오류: API 키가 설정되지 않았습니다.</span><br><br>
+    <strong style="color:var(--accent);">📋 데모 분석 결과</strong><br><br>
+    <strong>1. 현재 학습 수준</strong><br>
+    ${s.name} 학생은 ${s.stage}단계에서 ${Math.round(done/10*100)}%의 진도를 보이고 있습니다. ${done>=7?'매우 우수한 학습 속도입니다! 🌟':'꾸준히 학습하고 있으며 더 발전 가능성이 있습니다.'}<br><br>
+    <strong>2. 오답 패턴</strong><br>
+    ${wrong.length>0?`${wrong.length}개의 오답이 기록되어 있습니다. 주요 오답 유형: ${wrong.slice(0,3).map(w=>w.q).join(', ')} 등에서 어려움을 보이고 있습니다.`:'오답이 없습니다! 완벽한 이해도를 보이고 있습니다. 🎉'}<br><br>
+    <strong>3. 맞춤 학습 제안</strong><br>
+    ① 매일 10~15분씩 꾸준한 반복 학습<br>
+    ② 오답 문제 위주로 재복습<br>
+    ③ 다음 단계 진입 전 현재 단계 완전 마스터<br><br>
+    <strong>4. 학부모께</strong><br>
+    아이가 학습하는 시간을 칭찬해 주시고, 작은 성취도 크게 격려해 주세요! 🏆`;
+  }
+
+  btn.disabled=false;btn.textContent='🤖 AI 분석 시작';
+}
+
+// ── 초기화 ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', ()=>{
+  renderDashboard();
+});
+</script>
+</body>
+</html>

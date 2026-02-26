@@ -376,6 +376,51 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);height:100vh;ove
 .pp-close-btn{padding:8px;border-radius:8px;border:1px solid var(--ui-border);background:none;font-size:11px;color:var(--ink-mid);cursor:pointer;align-self:flex-start;margin-top:auto;}
 .pp-close-btn:hover{background:var(--bg);}
 
+/* ══ 게이미피케이션 ══════════════════════════════════════ */
+/* 포인트 팝업 */
+.point-popup{position:fixed;z-index:5000;font-family:'DM Mono',monospace;font-size:14px;font-weight:700;color:#f5a623;pointer-events:none;animation:pointFly 1.2s ease forwards;}
+@keyframes pointFly{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-60px) scale(0.8)}}
+/* 배지 알림 */
+.badge-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(10px);background:linear-gradient(135deg,#1a1814,#2a2218);border:1px solid #f5a623;border-radius:16px;padding:14px 20px;display:flex;align-items:center;gap:12px;z-index:5001;opacity:0;transition:all 0.3s;box-shadow:0 8px 32px rgba(0,0,0,0.4);}
+.badge-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.badge-toast-icon{font-size:28px;}
+.badge-toast-info{display:flex;flex-direction:column;}
+.badge-toast-title{font-size:12px;font-weight:700;color:#f5a623;}
+.badge-toast-name{font-size:14px;font-weight:700;color:#d0c8b8;}
+/* 학생 상태바 (게이미피케이션) */
+.game-bar{height:36px;flex-shrink:0;background:var(--ui-bg);border-bottom:1px solid var(--ui-border);display:flex;align-items:center;padding:0 16px;gap:16px;}
+.game-bar.hidden{display:none;}
+.game-xp-wrap{display:flex;align-items:center;gap:8px;flex:1;max-width:200px;}
+.game-xp-lbl{font-size:10px;color:var(--ink-light);font-family:'DM Mono',monospace;white-space:nowrap;}
+.game-xp-bar{flex:1;height:6px;background:var(--bg);border-radius:3px;overflow:hidden;}
+.game-xp-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#f5a623,#e8401c);transition:width 0.5s;}
+.game-level{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:#f5a623;min-width:40px;}
+.game-streak{display:flex;align-items:center;gap:4px;font-family:'DM Mono',monospace;font-size:11px;color:var(--ink-mid);}
+.game-streak.active{color:#f5a623;}
+.game-points{font-family:'DM Mono',monospace;font-size:11px;color:var(--stage-color);font-weight:700;}
+.game-badges-mini{display:flex;gap:3px;}
+.game-badge-icon{font-size:14px;cursor:pointer;}
+
+/* ══ 오답노트 패널 ════════════════════════════════════════ */
+#wrong-panel{position:fixed;left:0;top:0;bottom:0;width:300px;background:var(--ui-bg);border-right:1px solid var(--ui-border);z-index:7000;transform:translateX(-100%);transition:transform 0.3s;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);}
+#wrong-panel.open{transform:translateX(0);}
+.wp-header{padding:16px 18px 12px;border-bottom:1px solid var(--ui-border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.wp-title{font-size:14px;font-weight:700;color:var(--ink);}
+.wp-close{width:28px;height:28px;border-radius:50%;border:1px solid var(--ui-border);background:none;color:var(--ink-mid);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.wp-close:hover{background:var(--bg);}
+.wp-body{flex:1;overflow-y:auto;padding:12px;}
+.wp-empty{text-align:center;padding:40px 20px;color:var(--ink-light);font-size:13px;line-height:1.8;}
+.wrong-item{background:var(--bg);border:1px solid var(--ui-border);border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer;transition:all 0.15s;}
+.wrong-item:hover{border-color:var(--stage-mid);background:var(--stage-light);}
+.wrong-item-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.wrong-item-stage{font-size:10px;font-family:'DM Mono',monospace;padding:2px 8px;border-radius:20px;background:var(--stage-light);color:var(--stage-color);font-weight:700;}
+.wrong-item-date{font-size:10px;color:var(--ink-light);font-family:'DM Mono',monospace;}
+.wrong-item-q{font-size:15px;font-weight:700;color:var(--ink);font-family:'DM Mono',monospace;margin-bottom:4px;}
+.wrong-item-ans{font-size:11px;color:var(--ink-light);}
+.wrong-item-ans span{color:#1aad6e;font-weight:700;}
+.wp-clear-btn{margin:8px 12px;padding:8px;border-radius:8px;border:1px solid var(--ui-border);background:none;font-size:11px;color:var(--ink-light);cursor:pointer;width:calc(100% - 24px);transition:all 0.15s;}
+.wp-clear-btn:hover{background:rgba(232,64,28,0.05);color:#e8401c;border-color:rgba(232,64,28,0.2);}
+
 /* ══ STATUS BAR ════════════════════════════════════════════ */
 .statusbar{height:26px;flex-shrink:0;background:var(--ui-bg);border-top:1px solid var(--ui-border);display:flex;align-items:center;padding:0 20px;gap:20px;font-size:10px;font-family:'DM Mono',monospace;z-index:100;}
 .st-k{color:var(--ink-light);}
@@ -565,6 +610,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);height:100vh;ove
   <button class="tb-btn" id="btn-voice" onclick="openVoice()" style="display:flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="1" width="6" height="9" rx="3"/><path d="M2 8s0 6 6 6 6-6 6-6"/><line x1="8" y1="14" x2="8" y2="16"/></svg>채점</button>
   <div class="tb-sep"></div>
   <button class="tb-btn" id="btn-done-check" onclick="togglePageDone()" style="display:flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="2 8 6 12 14 4"/></svg>완료</button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" id="btn-wrong-note" onclick="toggleWrongPanel()" style="display:flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h8M4 9h6M4 12h4"/><rect x="1" y="2" width="14" height="13" rx="2"/></svg>오답노트<span id="wrong-count-badge" style="display:none;background:var(--stage-a);color:white;border-radius:10px;padding:1px 5px;font-size:9px;font-family:'DM Mono',monospace;"></span></button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" onclick="window.open('dashboard.html','_blank')" style="display:flex;align-items:center;gap:5px;color:var(--stage-b);"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>대시보드</button>
   <div class="tb-right"><span class="tb-info" id="tb-info">1 / 10 · B5 176×250mm</span></div>
 </div>
 
@@ -608,6 +657,19 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);height:100vh;ove
   </select>
 </div>
 
+<!-- 게이미피케이션 바 -->
+<div class="game-bar" id="game-bar">
+  <div class="game-level" id="game-level">Lv.1</div>
+  <div class="game-xp-wrap">
+    <span class="game-xp-lbl">XP</span>
+    <div class="game-xp-bar"><div class="game-xp-fill" id="game-xp-fill" style="width:0%"></div></div>
+    <span class="game-xp-lbl" id="game-xp-txt">0/100</span>
+  </div>
+  <div class="game-streak" id="game-streak">🔥 0일</div>
+  <div class="game-points" id="game-points">⭐ 0pt</div>
+  <div class="game-badges-mini" id="game-badges-mini"></div>
+</div>
+
 <!-- BODY -->
 <div class="app-body">
   <aside class="sidebar" id="sidebar">
@@ -629,6 +691,25 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);height:100vh;ove
   <div class="st-item"><span class="st-k">필기</span><span class="st-v" id="st-ink">OFF</span></div>
 </div>
 </div><!-- #app-main -->
+
+<!-- ─── 오답노트 패널 ────────────────────────────────────── -->
+<div id="wrong-panel">
+  <div class="wp-header">
+    <div class="wp-title">📝 오답노트</div>
+    <button class="wp-close" onclick="toggleWrongPanel()">✕</button>
+  </div>
+  <div class="wp-body" id="wrong-body"></div>
+  <button class="wp-clear-btn" onclick="clearWrongNotes()">전체 삭제</button>
+</div>
+
+<!-- 배지 알림 -->
+<div class="badge-toast" id="badge-toast">
+  <div class="badge-toast-icon" id="badge-toast-icon">🏆</div>
+  <div class="badge-toast-info">
+    <div class="badge-toast-title">배지 획득!</div>
+    <div class="badge-toast-name" id="badge-toast-name"></div>
+  </div>
+</div>
 
 <!-- ─── 음성 채점 모달 ──────────────────────────────── -->
 <div id="voice-modal">
@@ -764,6 +845,8 @@ function unlockApp(student){
   const sn=document.getElementById('qm-student-name');if(sn){sn.textContent=student.name;sn.style.display='flex';}
   const urlStage=new URLSearchParams(location.search).get('stage');
   if(urlStage&&['A','B','C'].includes(urlStage)) switchStage(urlStage);
+  // 게이미피케이션 초기화
+  setTimeout(()=>{ updateGameBar(); updateWrongBadge(); checkStreak(); }, 300);
 }
 
 /* 관리자 모달 */
@@ -1094,7 +1177,8 @@ function togglePageDone(){
   const tchk=document.getElementById(`tchk-${curStage}-${curPage}`);if(tchk) tchk.classList.toggle('show',isDone);
   document.getElementById('btn-done-check').classList.toggle('on',isDone);
   updateUI();updateProgressBars();refreshProgressPanel();
-  showToast(isDone?`✓ ${curPage}페이지 완료!`:`${curPage}페이지 완료 취소`);
+  if(isDone){ checkStreak(); addPoints(10,'페이지 완료'); }
+  showToast(isDone?`✓ ${curPage}페이지 완료! +10pt 🌟`:`${curPage}페이지 완료 취소`);
 }
 function updateProgressBars(){
   ['A','B','C'].forEach(s=>{
@@ -1185,10 +1269,21 @@ function toggleVoice(){
 function stopVoice(){if(recognition) recognition.stop();vmListening=false;document.getElementById('vm-mic-btn').classList.remove('on');}
 function checkVmAnswer(ans){
   const correct=vmCurrentProblem.a;
+  const q=vmCurrentProblem.q;
   const isOk=ans.includes(correct)||ans.replace(/[^0-9]/g,'')===correct.replace(/[^0-9]/g,'');
   const vb=document.getElementById('vm-voice-box');
-  if(isOk){vb.textContent='⭕ 정답!';vb.className='vm-voice-box correct';vmCorrect++;document.getElementById('vm-correct').textContent=vmCorrect;setTimeout(setVmProblem,1200);}
-  else{vb.textContent=`❌ 오답! 정답: ${correct}`;vb.className='vm-voice-box wrong';vmWrong++;document.getElementById('vm-wrong').textContent=vmWrong;setTimeout(setVmProblem,1800);}
+  if(isOk){
+    vb.textContent='⭕ 정답!';vb.className='vm-voice-box correct';
+    vmCorrect++;document.getElementById('vm-correct').textContent=vmCorrect;
+    addPoints(5,'정답');
+    setTimeout(setVmProblem,1200);
+  } else {
+    vb.textContent=`❌ 오답! 정답: ${correct}`;vb.className='vm-voice-box wrong';
+    vmWrong++;document.getElementById('vm-wrong').textContent=vmWrong;
+    addWrongNote(q, correct, ans); // 오답노트 자동 저장
+    updateWrongBadge();
+    setTimeout(setVmProblem,1800);
+  }
 }
 function vmKey(d){vmInput+=d;document.getElementById('vm-input-display').textContent=vmInput;}
 function vmDel(){vmInput=vmInput.slice(0,-1);document.getElementById('vm-input-display').textContent=vmInput||'—';}
@@ -1290,6 +1385,155 @@ function buildPJ(){
 function togglePJ(){document.getElementById('pj-dd').classList.toggle('open');}
 function closePJ(){document.getElementById('pj-dd').classList.remove('open');}
 document.addEventListener('click',e=>{if(!e.target.closest('.pj-wrap')) closePJ();});
+
+/* ══ 22. 게이미피케이션 ══════════════════════════════════ */
+const BADGES=[
+  {id:'first_done',icon:'🌟',name:'첫 완료!',desc:'첫 페이지 완료',condition:s=>s.totalDone>=1},
+  {id:'streak3',icon:'🔥',name:'3일 연속',desc:'3일 연속 학습',condition:s=>s.streak>=3},
+  {id:'streak7',icon:'💫',name:'7일 연속',desc:'7일 연속 학습',condition:s=>s.streak>=7},
+  {id:'points100',icon:'⭐',name:'100점 달성',desc:'누적 100포인트',condition:s=>s.points>=100},
+  {id:'points500',icon:'🏆',name:'500점 달성',desc:'누적 500포인트',condition:s=>s.points>=500},
+  {id:'done10',icon:'📚',name:'10장 완료',desc:'10페이지 완료',condition:s=>s.totalDone>=10},
+  {id:'done30',icon:'🎓',name:'30장 완료',desc:'30페이지 완료',condition:s=>s.totalDone>=30},
+  {id:'all_a',icon:'🅰️',name:'A단계 정복',desc:'A단계 전체 완료',condition:s=>s.stagesDone&&s.stagesDone.A},
+];
+const XP_PER_LEVEL=100;
+
+function getGameData(){
+  try{const r=localStorage.getItem(`kumon-game-${currentStudentId}`);return r?JSON.parse(r):{points:0,xp:0,level:1,streak:0,lastDate:'',badges:[],totalDone:0,stagesDone:{}};}
+  catch(e){return{points:0,xp:0,level:1,streak:0,lastDate:'',badges:[],totalDone:0,stagesDone:{}};}
+}
+function saveGameData(d){localStorage.setItem(`kumon-game-${currentStudentId}`,JSON.stringify(d));}
+
+function addPoints(pts, reason){
+  if(!currentStudentId||currentStudentId==='default') return;
+  const d=getGameData();
+  d.points+=pts; d.xp+=pts;
+  // 레벨업
+  while(d.xp>=XP_PER_LEVEL*d.level){ d.xp-=XP_PER_LEVEL*d.level; d.level++; showToast(`🎉 레벨 업! Lv.${d.level} 달성!`); }
+  saveGameData(d); updateGameBar();
+  // 팝업
+  showPointPopup(`+${pts}pt`, reason);
+  checkBadges();
+}
+
+function checkStreak(){
+  const d=getGameData();
+  const today=new Date().toDateString();
+  const yesterday=new Date(Date.now()-86400000).toDateString();
+  if(d.lastDate===today) return;
+  if(d.lastDate===yesterday){ d.streak++; }
+  else if(d.lastDate!==today){ d.streak=1; }
+  d.lastDate=today;
+  saveGameData(d); updateGameBar();
+  if(d.streak>1) showToast(`🔥 ${d.streak}일 연속 학습 중!`);
+}
+
+function checkBadges(){
+  const d=getGameData();
+  // totalDone 계산
+  let total=0;
+  ['A','B','C'].forEach(s=>{for(let p=1;p<=20;p++){if(localStorage.getItem(`kumon-done-${currentStudentId}-${s}-${p}`)==='1') total++;}});
+  d.totalDone=total;
+  BADGES.forEach(b=>{
+    if(!d.badges.includes(b.id)&&b.condition(d)){
+      d.badges.push(b.id);
+      saveGameData(d);
+      showBadgeToast(b);
+    }
+  });
+  saveGameData(d);
+}
+
+function showBadgeToast(badge){
+  const t=document.getElementById('badge-toast');
+  document.getElementById('badge-toast-icon').textContent=badge.icon;
+  document.getElementById('badge-toast-name').textContent=badge.name;
+  t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+function showPointPopup(text){
+  const el=document.createElement('div');
+  el.className='point-popup'; el.textContent=text;
+  // 현재 페이지 근처에 표시
+  el.style.left=(Math.random()*60+20)+'%';
+  el.style.top='40%';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1300);
+}
+
+function updateGameBar(){
+  const d=getGameData();
+  const level=d.level||1, xp=d.xp||0, maxXp=XP_PER_LEVEL*level;
+  document.getElementById('game-level').textContent=`Lv.${level}`;
+  document.getElementById('game-xp-fill').style.width=Math.min(100,xp/maxXp*100)+'%';
+  document.getElementById('game-xp-txt').textContent=`${xp}/${maxXp}`;
+  const streak=d.streak||0;
+  const sg=document.getElementById('game-streak');
+  sg.textContent=`🔥 ${streak}일`;sg.className='game-streak'+(streak>=3?' active':'');
+  document.getElementById('game-points').textContent=`⭐ ${d.points||0}pt`;
+  // 미니 배지
+  const mini=document.getElementById('game-badges-mini');
+  mini.innerHTML=(d.badges||[]).slice(-4).map(id=>{const b=BADGES.find(x=>x.id===id);return b?`<span class="game-badge-icon" title="${b.name}">${b.icon}</span>`:''}).join('');
+}
+
+/* ══ 23. 오답노트 ════════════════════════════════════════ */
+function getWrongNotes(){
+  try{const r=localStorage.getItem(`kumon-wrong-${currentStudentId}`);return r?JSON.parse(r):[];}
+  catch(e){return[];}
+}
+function saveWrongNotes(arr){localStorage.setItem(`kumon-wrong-${currentStudentId}`,JSON.stringify(arr));}
+
+function addWrongNote(question, correctAnswer, myAnswer){
+  const notes=getWrongNotes();
+  // 중복 방지
+  if(notes.find(n=>n.q===question)) return;
+  notes.unshift({id:Date.now(),q:question,correct:correctAnswer,mine:myAnswer,stage:curStage,page:curPage,date:new Date().toLocaleDateString('ko-KR')});
+  if(notes.length>50) notes.splice(50); // 최대 50개
+  saveWrongNotes(notes);
+  updateWrongBadge();
+}
+
+function updateWrongBadge(){
+  const notes=getWrongNotes();
+  const badge=document.getElementById('wrong-count-badge');
+  if(notes.length>0){badge.textContent=notes.length;badge.style.display='';}
+  else{badge.style.display='none';}
+}
+
+function toggleWrongPanel(){
+  const panel=document.getElementById('wrong-panel');
+  panel.classList.toggle('open');
+  if(panel.classList.contains('open')) renderWrongNotes();
+}
+
+function renderWrongNotes(){
+  const notes=getWrongNotes();
+  const body=document.getElementById('wrong-body');
+  if(!notes.length){
+    body.innerHTML=`<div class="wp-empty">📝 오답이 없습니다!<br><br>음성 채점에서 틀린 문제가<br>여기에 자동으로 저장됩니다.</div>`;
+    return;
+  }
+  body.innerHTML=notes.map(n=>`
+    <div class="wrong-item" onclick="goToPage(${n.page});toggleWrongPanel();">
+      <div class="wrong-item-header">
+        <span class="wrong-item-stage">${n.stage}단계 ${n.page}p</span>
+        <span class="wrong-item-date">${n.date}</span>
+      </div>
+      <div class="wrong-item-q">${n.q}</div>
+      <div class="wrong-item-ans">내 답: ${n.mine||'?'} → 정답: <span>${n.correct}</span></div>
+    </div>
+  `).join('');
+}
+
+function clearWrongNotes(){
+  if(!confirm('오답노트를 전체 삭제할까요?')) return;
+  saveWrongNotes([]);
+  renderWrongNotes();
+  updateWrongBadge();
+  showToast('오답노트 초기화 완료');
+}
 
 /* ══ 21. PWA ════════════════════════════════════════════ */
 if('serviceWorker' in navigator){
